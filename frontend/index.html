@@ -26,13 +26,6 @@
     .sep { width: 1px; height: 22px; background: var(--border); flex-shrink: 0; }
     .ctrl-group { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .ctrl-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--accent); white-space: nowrap; }
-    #year-select {
-      background: var(--surface2); border: 1px solid var(--border); color: var(--text);
-      border-radius: 4px; padding: 4px 10px; font-size: 0.75rem;
-      font-family: 'IBM Plex Mono', monospace; cursor: pointer; outline: none;
-    }
-    #year-select:hover, #year-select:focus { border-color: var(--accent); }
-    #year-select option { background: var(--surface2); }
     .toggles { display: flex; gap: 12px; }
     .toggle-row { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; cursor: pointer; color: var(--text); white-space: nowrap; }
     .toggle-row input { accent-color: var(--accent); }
@@ -58,13 +51,104 @@
     .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
     .dot.diamond { border-radius: 0; transform: rotate(45deg); width: 9px; height: 9px; }
 
-    /* CHARTS — fixed 200px, canvas sized explicitly */
-    #charts-row { height: 200px; flex-shrink: 0; display: flex; background: var(--surface); border-top: 1px solid var(--border); }
+    /* CHARTS — hidden by default, toggled via button */
+    #charts-row { height: 200px; flex-shrink: 0; display: none; background: var(--surface); border-top: 1px solid var(--border); }
+    #charts-row.charts-visible { display: flex; }
     .chart-card { flex: 1; min-width: 0; padding: 10px 14px 8px; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
     .chart-card:last-child { border-right: none; }
     .chart-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 6px; flex-shrink: 0; }
     /* Key fix: give canvas a concrete height, not flex */
     .chart-card canvas { display: block; width: 100% !important; height: 150px !important; }
+
+    /* STATION PANEL */
+    #station-panel {
+      position: absolute; left: 0; top: 0; bottom: 0; width: 280px; z-index: 1001;
+      background: rgba(10,12,18,0.96); backdrop-filter: blur(8px);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      transform: translateX(-100%); transition: transform 0.22s ease;
+      pointer-events: none;
+    }
+    #station-panel.open { transform: translateX(0); pointer-events: all; }
+    #panel-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    #panel-badge { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 1.2px; }
+    #panel-close { background: none; border: none; color: var(--muted); font-size: 1.3rem; cursor: pointer; padding: 0 4px; line-height: 1; }
+    #panel-close:hover { color: var(--text); }
+    #panel-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+    #panel-name { font-size: 1rem; font-weight: 600; color: #fff; line-height: 1.3; }
+    #panel-address { font-size: 0.78rem; color: var(--muted); }
+    .panel-divider { height: 1px; background: var(--border); }
+    #panel-preview { border-radius: 5px; overflow: hidden; position: relative; }
+    #panel-preview a { display: block; position: relative; }
+    #panel-preview img { display: block; width: 100%; height: 110px; object-fit: cover; }
+    #panel-preview .sv-badge {
+      position: absolute; bottom: 6px; right: 7px;
+      background: rgba(0,0,0,0.65); color: #fff;
+      font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem;
+      letter-spacing: 0.6px; padding: 2px 6px; border-radius: 3px; pointer-events: none;
+    }
+    #panel-preview:not(:empty) { margin-bottom: 10px; }
+    .panel-row { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+    .panel-row-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+    .panel-row-value { font-size: 0.8rem; color: var(--text); }
+
+    /* CHARTS CONTROLS */
+    #charts-controls {
+      position: absolute; bottom: 14px; left: 14px; z-index: 999;
+      display: flex; align-items: center; gap: 8px;
+    }
+    #btn-charts {
+      background: rgba(10,12,18,0.88); backdrop-filter: blur(6px);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 7px 14px; cursor: pointer; color: var(--accent);
+      font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem;
+      text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+    }
+    #btn-charts:hover { border-color: var(--accent); background: rgba(17,20,32,0.95); }
+    #charts-controls #year-select {
+      display: none;
+      background: rgba(10,12,18,0.88); backdrop-filter: blur(6px);
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text); padding: 7px 10px;
+      font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem;
+      cursor: pointer; outline: none;
+    }
+    #charts-controls #year-select:hover,
+    #charts-controls #year-select:focus { border-color: var(--accent); }
+    #charts-controls #year-select option { background: var(--surface2); }
+    #charts-controls #year-select.year-visible { display: block; }
+
+    /* MOBILE */
+    @media (max-width: 768px) {
+      header { flex-wrap: wrap; height: auto; min-height: 52px; padding: 8px 12px; gap: 8px; }
+      .header-stats { margin-left: 0; width: 100%; border-top: 1px solid var(--border); padding-top: 6px; }
+
+      /* Station panel: tall enough to show all data, scrollable */
+      #station-panel {
+        width: 100%; left: 0; top: auto; bottom: 0;
+        height: 65vh; max-height: 65vh;
+        transform: translateY(100%);
+        border-right: none; border-top: 1px solid var(--border);
+      }
+      #station-panel.open { transform: translateY(0); }
+      #panel-body { flex: 1; overflow-y: auto; }
+
+      /* Historical data: stack charts vertically, scrollable */
+      #charts-row {
+        flex-direction: column;
+        height: 55vh; max-height: 55vh;
+        overflow-y: auto;
+      }
+      .chart-card {
+        flex: none;
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 12px 14px;
+      }
+      .chart-card:last-child { border-bottom: none; }
+      .chart-card canvas { height: 180px !important; }
+    }
   </style>
 </head>
 <body>
@@ -73,31 +157,15 @@
     <h1>Calgary EMS Dashboard</h1>
     <div class="sep"></div>
     <div class="ctrl-group">
-      <span class="ctrl-label">Year</span>
-      <select id="year-select">
-        <option value="">All</option>
-        <option value="2010">2010</option>
-        <option value="2011">2011</option>
-        <option value="2012">2012</option>
-        <option value="2013">2013</option>
-        <option value="2014">2014</option>
-        <option value="2015">2015</option>
-        <option value="2016">2016</option>
-        <option value="2017">2017</option>
-        <option value="2018">2018</option>
-        <option value="2019">2019</option>
-      </select>
-    </div>
-    <div class="sep"></div>
-    <div class="ctrl-group">
       <span class="ctrl-label">Layers</span>
 
 <div class="toggles">
-  <label class="toggle-row"><input type="checkbox" id="toggle-ems" checked><span class="dot" style="background:#e63946;"></span>EMS</label>
-  <label class="toggle-row"><input type="checkbox" id="toggle-fire" checked><span class="dot" style="background:#4da6ff;"></span>Fire</label>
+  <label class="toggle-row"><input type="checkbox" id="toggle-ems" checked><span class="dot" style="background:#4da6ff;"></span>EMS</label>
+  <label class="toggle-row"><input type="checkbox" id="toggle-fire" checked><span class="dot" style="background:#e63946;"></span>Fire</label>
   <label class="toggle-row"><input type="checkbox" id="toggle-shared" checked><span class="dot" style="background:#c77dff;"></span>Shared</label>
   <label class="toggle-row"><input type="checkbox" id="toggle-coverage"><span class="dot" style="background:#00ff88;"></span>Coverage</label>
   <label class="toggle-row"><input type="checkbox" id="toggle-hospitals" checked><span style="display:inline-block;width:10px;height:10px;position:relative;flex-shrink:0;"><span style="position:absolute;top:3px;left:0;right:0;height:4px;background:#fff;border-radius:1px;"></span><span style="position:absolute;left:3px;top:0;bottom:0;width:4px;background:#fff;border-radius:1px;"></span></span>Hospitals</label>
+  <label class="toggle-row"><input type="checkbox" id="toggle-zones"><span class="dot" style="background:#4da6ff;opacity:0.5;border:1px solid rgba(77,166,255,0.6);"></span>Zones</label>
 </div>
 
     </div>
@@ -113,11 +181,40 @@
   <div id="app">
     <div id="map-wrap">
       <div id="map"></div>
+      <div id="station-panel">
+        <div id="panel-header">
+          <span id="panel-badge"></span>
+          <button id="panel-close">×</button>
+        </div>
+        <div id="panel-body">
+          <div id="panel-preview"></div>
+          <div id="panel-name"></div>
+          <div id="panel-address"></div>
+          <div class="panel-divider"></div>
+          <div id="panel-details"></div>
+        </div>
+      </div>
+      <div id="charts-controls">
+        <button id="btn-charts">Historical Data <span id="btn-charts-arrow">↑</span></button>
+        <select id="year-select">
+          <option value="">All Years</option>
+          <option value="2010">2010</option>
+          <option value="2011">2011</option>
+          <option value="2012">2012</option>
+          <option value="2013">2013</option>
+          <option value="2014">2014</option>
+          <option value="2015">2015</option>
+          <option value="2016">2016</option>
+          <option value="2017">2017</option>
+          <option value="2018">2018</option>
+          <option value="2019">2019</option>
+        </select>
+      </div>
       <div id="map-legend">
         <div class="legend-title">Legend</div>
-        <div class="legend-row"><span class="dot" style="background:#e63946;"></span>EMS Only</div>
-        <div class="legend-row"><span class="dot" style="background:#4da6ff;"></span>Fire Only</div>
-        <div class="legend-row"><span class="dot" style="background:#c77dff;"></span>EMS + Fire (Shared)</div>
+        <div class="legend-row"><span class="dot" style="background:#4da6ff;"></span>EMS Station</div>
+        <div class="legend-row"><span class="dot" style="background:#e63946;"></span>Fire Station</div>
+        <div class="legend-row"><span class="dot" style="background:#c77dff;"></span>Shared Stations</div>
         <div class="legend-row"><span class="dot diamond" style="background:#ffd166;"></span>Fire HQ (Station 16)</div>
 	<div class="legend-row"><span class="dot diamond" style="background:#ff9f1c;"></span>EMS Superstation</div>
         <div class="legend-row">
@@ -126,6 +223,7 @@
             <span style="position:absolute;left:3px;top:0;bottom:0;width:4px;background:#fff;border-radius:1px;"></span>
           </span>Hospital
         </div>
+        <div class="legend-row"><span class="dot" style="background:#4da6ff;opacity:0.5;border:1px solid rgba(77,166,255,0.6);"></span>EMS Response Zone</div>
       </div>
     </div>
 
@@ -136,6 +234,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

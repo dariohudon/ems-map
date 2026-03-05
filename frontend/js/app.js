@@ -8,10 +8,13 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
   subdomains: 'abcd', maxZoom: 19
 }).addTo(map);
 
-const fireLayer     = L.layerGroup().addTo(map);
+const zoneLayer            = L.layerGroup().addTo(map); // added first so it renders below all markers
+const stationCoverageLayer = L.layerGroup().addTo(map); // per-click 8km circle
+const fireLayer            = L.layerGroup().addTo(map);
 const sharedLayer   = L.layerGroup().addTo(map);
 const emsLayer      = L.layerGroup().addTo(map);
 const hospitalLayer = L.layerGroup().addTo(map);
+var   cachedStations = [];
 
 function makeIcon(color, size, glow) {
   var s = size || 14;
@@ -29,8 +32,8 @@ function makeStarIcon(color) {
   });
 }
 
-var emsIcon    = makeIcon('#e63946', 14, 'rgba(230,57,70,0.8)');
-var fireIcon   = makeIcon('#4da6ff', 14, 'rgba(77,166,255,0.8)');
+var emsIcon    = makeIcon('#4da6ff', 14, 'rgba(77,166,255,0.8)');
+var fireIcon   = makeIcon('#e63946', 14, 'rgba(230,57,70,0.8)');
 var sharedIcon = makeIcon('#c77dff', 16, 'rgba(199,125,255,0.9)');
 var hqIcon     = makeStarIcon('#ffd166');
 
@@ -50,18 +53,35 @@ var hospitalIcon = L.divIcon({
 });
 
 var hospitals = [
-  { name: 'Foothills Medical Centre',    type: 'Acute Care Hospital',   address: '1403 29 St NW',     coords: [51.0638, -114.1320] },
-  { name: 'Peter Lougheed Centre',       type: 'Acute Care Hospital',   address: '3500 26 Ave NE',    coords: [51.0723, -113.9735] },
-  { name: 'Rockyview General Hospital',  type: 'Acute Care Hospital',   address: '7007 14 St SW',     coords: [50.9783, -114.0789] },
-  { name: 'South Health Campus',         type: 'Acute Care Hospital',   address: '4448 Front St SE',  coords: [50.8893, -113.9958] },
-  { name: 'Alberta Children\'s Hospital',type: "Children's Hospital",   address: '28 Oki Dr NW',      coords: [51.0787, -114.1845] }
+  { name: 'Foothills Medical Centre',    type: 'Acute Care Hospital', address: '1403 29 St NW',    coords: [51.0638, -114.1320], trauma: 'Level 1 Trauma Centre',    helipad: true  },
+  { name: 'Peter Lougheed Centre',       type: 'Acute Care Hospital', address: '3500 26 Ave NE',   coords: [51.0723, -113.9735], trauma: null,                        helipad: false },
+  { name: 'Rockyview General Hospital',  type: 'Acute Care Hospital', address: '7007 14 St SW',    coords: [50.9783, -114.0789], trauma: null,                        helipad: false },
+  { name: 'South Health Campus',         type: 'Acute Care Hospital', address: '4448 Front St SE', coords: [50.8893, -113.9958], trauma: null,                        helipad: true  },
+  { name: 'Alberta Children\'s Hospital',type: "Children's Hospital", address: '28 Oki Dr NW',     coords: [51.0787, -114.1845], trauma: 'Pediatric Trauma Centre',   helipad: false }
 ];
+
+function nearestHospital(coords) {
+  var best = null, bestDist = Infinity;
+  hospitals.forEach(function(h) {
+    var d = turf.distance(turf.point([coords[1], coords[0]]), turf.point([h.coords[1], h.coords[0]]), { units: 'kilometers' });
+    if (d < bestDist) { bestDist = d; best = h; }
+  });
+  return best ? best.name + ' (' + bestDist.toFixed(1) + ' km)' : null;
+}
 
 function loadHospitals() {
   hospitalLayer.clearLayers();
   hospitals.forEach(function(h) {
     L.marker(h.coords, { icon: hospitalIcon })
       .bindTooltip(tip('#00838f', h.name, h.type, h.address), { sticky: false, opacity: 0.95 })
+      .on('click', function(e) {
+        L.DomEvent.stopPropagation(e);
+        var rows = [{ label: 'Operator', value: 'Alberta Health Services (AHS)' }];
+        if (h.trauma) rows.push({ label: 'Trauma Designation', value: h.trauma });
+        if (h.helipad) rows.push({ label: 'Helipad', value: 'Yes' });
+        rows.push({ label: 'ED Wait Times', value: 'View current wait times', link: 'https://www.albertahealthservices.ca/waittimes/Page14230.aspx' });
+        openPanel({ name: h.name, type: h.type, color: '#00838f', address: h.address, rows: rows });
+      })
       .addTo(hospitalLayer);
   });
 }
@@ -88,6 +108,70 @@ function tip(color, name, type, address) {
     + '</div>';
 }
 
+function openPanel(info) {
+  document.getElementById('panel-badge').textContent = info.type;
+  document.getElementById('panel-badge').style.color = info.color;
+  document.getElementById('panel-name').textContent = info.name;
+  document.getElementById('panel-address').textContent = info.address || '';
+  var prev = document.getElementById('panel-preview');
+  if (info.coords) {
+    var lat = info.coords[0], lng = info.coords[1];
+    var imgSrc = 'https://maps.googleapis.com/maps/api/streetview?size=248x110&location=' + lat + ',' + lng + '&fov=90&pitch=5&key=AIzaSyD-S4ihy_PLbSubHeQg02kXhD8hMMp4BvU';
+    var svHref = 'https://www.google.com/maps/@' + lat + ',' + lng + ',3a,75y/data=!3m6!1e1';
+    prev.innerHTML = '<a href="' + svHref + '" target="_blank" rel="noopener">'
+      + '<img src="' + imgSrc + '" alt="Map preview" loading="lazy">'
+      + '<span class="sv-badge">↗ Street View</span></a>';
+  } else {
+    prev.innerHTML = '';
+  }
+  var det = document.getElementById('panel-details');
+  det.innerHTML = (info.rows || []).map(function(r) {
+    var val = r.link
+      ? '<a href="' + r.link + '" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">↗ ' + r.value + '</a>'
+      : r.value;
+    return '<div class="panel-row"><span class="panel-row-label">' + r.label + '</span>'
+         + '<span class="panel-row-value">' + val + '</span></div>';
+  }).join('');
+  stationCoverageLayer.clearLayers();
+  if (info.coords) {
+    L.circle(info.coords, {
+      radius: 8000, color: '#00ff88', fillColor: '#00ff88',
+      fillOpacity: 0.10, opacity: 0.6, weight: 1.5
+    }).addTo(stationCoverageLayer);
+  }
+  document.getElementById('station-panel').classList.add('open');
+}
+function closePanel() {
+  document.getElementById('station-panel').classList.remove('open');
+  stationCoverageLayer.clearLayers();
+}
+document.getElementById('panel-close').addEventListener('click', closePanel);
+map.on('click', closePanel);
+
+function drawZones(stations) {
+  zoneLayer.clearLayers();
+  var points = [], colors = [];
+  stations.forEach(function(s) {
+    var coords = getCoords(s); if (!coords) return;
+    points.push(turf.point([coords[1], coords[0]]));
+    colors.push(s.collocated === true ? '#c77dff' : '#4da6ff');
+  });
+  superstations.forEach(function(s) {
+    points.push(turf.point([s.coords[1], s.coords[0]]));
+    colors.push('#ff9f1c');
+  });
+  if (points.length === 0) return;
+  var voronoi = turf.voronoi(turf.featureCollection(points), { bbox: [-114.5, 50.82, -113.75, 51.28] });
+  if (!voronoi) return;
+  voronoi.features.forEach(function(feature, i) {
+    if (!feature) return;
+    var color = colors[i] || '#888';
+    L.geoJSON(feature, {
+      style: { color: color, fillColor: color, fillOpacity: 0.07, opacity: 0.4, weight: 1, dashArray: '4 4' }
+    }).addTo(zoneLayer);
+  });
+}
+
 var chartMonth = null, chartDay = null, chartType = null;
 
 async function loadStations() {
@@ -98,16 +182,36 @@ async function loadStations() {
     var coords = getCoords(s); if (!coords) return;
     var name = s.name || 'EMS Station';
     var shared = s.collocated === true;
-    var color = shared ? '#c77dff' : '#e63946';
+    var color = shared ? '#c77dff' : '#4da6ff';
     var type = shared ? 'EMS + Fire (Shared)' : 'EMS Station';
     L.marker(coords, { icon: shared ? sharedIcon : emsIcon })
       .bindTooltip(tip(color, name, type, s.address), { sticky: false, opacity: 0.95 })
+      .on('click', function(e) {
+        L.DomEvent.stopPropagation(e);
+        var nh = nearestHospital(coords);
+        var rows = [
+          { label: 'Status', value: shared ? 'Co-located with Fire' : 'EMS Only' },
+          { label: 'Operator', value: 'Alberta Health Services (AHS)' }
+        ];
+        if (nh) rows.push({ label: 'Nearest Hospital', value: nh });
+        openPanel({ name: name, type: type, color: color, address: s.address, coords: coords, rows: rows });
+      })
       .addTo(shared ? sharedLayer : emsLayer);
   });
   // Add superstations after clearLayers so they don't get wiped
   superstations.forEach(function(s) {
     L.marker(s.coords, { icon: superstationIcon })
       .bindTooltip(tip('#ff9f1c', s.name, s.type, s.address), { sticky: false, opacity: 0.95 })
+      .on('click', function(e) {
+        L.DomEvent.stopPropagation(e);
+        var nh = nearestHospital(s.coords);
+        var rows = [
+          { label: 'Classification', value: 'AHS Superstation' },
+          { label: 'Operator', value: 'Alberta Health Services (AHS)' }
+        ];
+        if (nh) rows.push({ label: 'Nearest Hospital', value: nh });
+        openPanel({ name: s.name, type: s.type, color: '#ff9f1c', address: s.address, coords: s.coords, rows: rows });
+      })
       .addTo(emsLayer);
   });
   document.getElementById('stat-ems').textContent = stations.length;
@@ -122,10 +226,16 @@ async function loadFireStations() {
     if (s.collocated === true) return;
     var name = s.name || 'Fire Station';
     var isHQ = name.indexOf('HQ') !== -1;
-    var color = isHQ ? '#ffd166' : '#4da6ff';
+    var color = isHQ ? '#ffd166' : '#e63946';
     var type = isHQ ? 'Fire HQ' : 'Fire Station';
     L.marker(coords, { icon: isHQ ? hqIcon : fireIcon })
       .bindTooltip(tip(color, name, type, s.address), { sticky: false, opacity: 0.95 })
+      .on('click', function(e) {
+        L.DomEvent.stopPropagation(e);
+        var rows = [{ label: 'Operator', value: 'City of Calgary Fire Department' }];
+        if (isHQ) rows.push({ label: 'Note', value: 'Administrative headquarters for CFD' });
+        openPanel({ name: name, type: type, color: color, address: s.address, rows: rows });
+      })
       .addTo(fireLayer);
   });
   document.getElementById('stat-fire').textContent = stations.length;
@@ -232,12 +342,23 @@ document.getElementById('toggle-coverage').addEventListener('change', function(e
 document.getElementById('toggle-hospitals').addEventListener('change', function(e) {
   if (e.target.checked) hospitalLayer.addTo(map); else map.removeLayer(hospitalLayer);
 });
+document.getElementById('toggle-zones').addEventListener('change', function(e) {
+  if (e.target.checked) drawZones(cachedStations); else zoneLayer.clearLayers();
+});
+document.getElementById('btn-charts').addEventListener('click', function() {
+  var row = document.getElementById('charts-row');
+  row.classList.toggle('charts-visible');
+  var open = row.classList.contains('charts-visible');
+  document.getElementById('btn-charts-arrow').textContent = open ? '↓' : '↑';
+  document.getElementById('year-select').classList.toggle('year-visible', open);
+});
 
 async function init() {
   const [stations, fireStations] = await Promise.all([
     fetch(API_BASE + '/stations').then(r => r.json()),
     fetch(API_BASE + '/fire-stations').then(r => r.json())
   ]);
+  cachedStations = stations;
   await Promise.all([loadStations(), loadFireStations(), loadStats(null)]);
   loadHospitals();
   drawCoverage(stations, fireStations);
