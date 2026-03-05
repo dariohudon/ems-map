@@ -32,8 +32,9 @@ function makeStarIcon(color) {
   });
 }
 
-var emsIcon    = makeIcon('#4da6ff', 14, 'rgba(77,166,255,0.8)');
-var fireIcon   = makeIcon('#e63946', 14, 'rgba(230,57,70,0.8)');
+var emsIcon      = makeIcon('#4da6ff', 14, 'rgba(77,166,255,0.8)');
+var fireIcon     = makeIcon('#e63946', 14, 'rgba(230,57,70,0.8)');
+var searchPinIcon = makeIcon('#00ff88', 14, 'rgba(0,255,136,0.8)');
 var sharedIcon = makeIcon('#c77dff', 16, 'rgba(199,125,255,0.9)');
 var hqIcon     = makeStarIcon('#ffd166');
 
@@ -144,7 +145,83 @@ function openPanel(info) {
 function closePanel() {
   document.getElementById('station-panel').classList.remove('open');
   stationCoverageLayer.clearLayers();
+  if (searchMarker) { map.removeLayer(searchMarker); searchMarker = null; }
 }
+
+// ── ADDRESS SEARCH ────────────────────────────────────────────────────────────
+var searchMarker = null;
+
+function nearestEMSStation(coords) {
+  var best = null, bestDist = Infinity;
+  cachedStations.forEach(function(s) {
+    var sc = getCoords(s); if (!sc) return;
+    var d = turf.distance(turf.point([coords[1], coords[0]]), turf.point([sc[1], sc[0]]), { units: 'kilometers' });
+    if (d < bestDist) { bestDist = d; best = { name: s.name || 'EMS Station', dist: d }; }
+  });
+  superstations.forEach(function(s) {
+    var d = turf.distance(turf.point([coords[1], coords[0]]), turf.point([s.coords[1], s.coords[0]]), { units: 'kilometers' });
+    if (d < bestDist) { bestDist = d; best = { name: s.name, dist: d }; }
+  });
+  return best;
+}
+
+async function searchAddress(query) {
+  query = query.trim();
+  if (!query) return;
+  var btn = document.getElementById('search-btn');
+  btn.textContent = '…';
+  try {
+    var url = 'https://nominatim.openstreetmap.org/search?q='
+      + encodeURIComponent(query + ', Calgary, Alberta, Canada')
+      + '&format=json&limit=1&countrycodes=ca';
+    var data = await fetch(url).then(function(r) { return r.json(); });
+    if (!data.length) { btn.textContent = '↵'; alert('Address not found. Try a street name or intersection.'); return; }
+    var lat = parseFloat(data[0].lat), lng = parseFloat(data[0].lon);
+    map.setView([lat, lng], 15);
+    if (searchMarker) map.removeLayer(searchMarker);
+    searchMarker = L.marker([lat, lng], { icon: searchPinIcon }).addTo(map);
+    var nearest = nearestEMSStation([lat, lng]);
+    var rows = [];
+    if (nearest) rows.push({ label: 'Nearest EMS Station', value: nearest.name + ' (' + nearest.dist.toFixed(1) + ' km)' });
+    var label = data[0].display_name.split(',')[0];
+    openPanel({ name: label, type: 'Search Result', color: '#00ff88', address: data[0].display_name.split(',').slice(0,3).join(','), rows: rows });
+  } catch(e) {
+    alert('Search failed. Please try again.');
+  }
+  btn.textContent = '↵';
+}
+
+document.getElementById('search-btn').addEventListener('click', function() {
+  searchAddress(document.getElementById('search-input').value);
+});
+document.getElementById('search-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') searchAddress(this.value);
+});
+
+// ── PERMALINK / HASH SYNC ─────────────────────────────────────────────────────
+function updateHash() {
+  var c = map.getCenter(), z = map.getZoom();
+  history.replaceState(null, '', '#' + z + '/' + c.lat.toFixed(5) + '/' + c.lng.toFixed(5));
+}
+function parseHash() {
+  var parts = location.hash.replace('#', '').split('/');
+  if (parts.length === 3) {
+    var z = parseInt(parts[0]), lat = parseFloat(parts[1]), lng = parseFloat(parts[2]);
+    if (!isNaN(z) && !isNaN(lat) && !isNaN(lng)) map.setView([lat, lng], z);
+  }
+}
+map.on('moveend', updateHash);
+parseHash();
+
+document.getElementById('btn-share').addEventListener('click', function() {
+  updateHash();
+  navigator.clipboard.writeText(window.location.href).then(function() {
+    var btn = document.getElementById('btn-share');
+    var orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = orig; }, 2000);
+  });
+});
 document.getElementById('panel-close').addEventListener('click', closePanel);
 map.on('click', closePanel);
 

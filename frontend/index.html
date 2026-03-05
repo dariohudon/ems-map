@@ -118,10 +118,45 @@
     #charts-controls #year-select option { background: var(--surface2); }
     #charts-controls #year-select.year-visible { display: block; }
 
+    /* SEARCH BOX */
+    #search-box {
+      position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+      z-index: 999; display: flex;
+      background: rgba(10,12,18,0.88); backdrop-filter: blur(6px);
+      border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+    }
+    #search-input {
+      background: transparent; border: none; outline: none;
+      color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 0.82rem;
+      padding: 8px 12px; width: 260px;
+    }
+    #search-input::placeholder { color: var(--muted); }
+    #search-btn {
+      background: none; border: none; border-left: 1px solid var(--border);
+      color: var(--accent); padding: 8px 12px; cursor: pointer; font-size: 1rem; line-height: 1;
+    }
+    #search-btn:hover { background: var(--surface2); }
+
+    /* SHARE BUTTON */
+    #btn-share {
+      position: absolute; bottom: 14px; right: 14px; z-index: 999;
+      background: rgba(10,12,18,0.88); backdrop-filter: blur(6px);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 7px 14px; cursor: pointer; color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem;
+      text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+    }
+    #btn-share:hover { border-color: var(--accent); color: var(--accent); }
+
     /* MOBILE */
     @media (max-width: 768px) {
       header { flex-wrap: wrap; height: auto; min-height: 52px; padding: 8px 12px; gap: 8px; }
       .header-stats { margin-left: 0; width: 100%; border-top: 1px solid var(--border); padding-top: 6px; }
+
+      /* Search box: full width on mobile */
+      #search-box { left: 14px; right: 60px; transform: none; }
+      #search-input { width: 100%; }
+      #btn-share { display: none; }
 
       /* Station panel: tall enough to show all data, scrollable */
       #station-panel {
@@ -181,6 +216,11 @@
   <div id="app">
     <div id="map-wrap">
       <div id="map"></div>
+      <div id="search-box">
+        <input type="text" id="search-input" placeholder="Search address in Calgary…" autocomplete="off">
+        <button id="search-btn">↵</button>
+      </div>
+      <button id="btn-share">Share ↗</button>
       <div id="station-panel">
         <div id="panel-header">
           <span id="panel-badge"></span>
