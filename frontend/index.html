@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calgary EMS Dashboard</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0c12; --surface: #111420; --surface2: #181c2e;
+      --border: #1e2236; --accent: #4da6ff; --text: #e0e0e0; --muted: #4a5270;
+    }
+    html, body { height: 100%; font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
+
+    /* HEADER */
+    header {
+      height: 52px; background: var(--surface); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 20px; gap: 20px; flex-shrink: 0;
+    }
+    h1 { font-family: 'IBM Plex Mono', monospace; font-size: 0.88rem; font-weight: 600; color: #fff; white-space: nowrap; flex-shrink: 0; }
+    .sep { width: 1px; height: 22px; background: var(--border); flex-shrink: 0; }
+    .ctrl-group { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .ctrl-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--accent); white-space: nowrap; }
+    #year-select {
+      background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+      border-radius: 4px; padding: 4px 10px; font-size: 0.75rem;
+      font-family: 'IBM Plex Mono', monospace; cursor: pointer; outline: none;
+    }
+    #year-select:hover, #year-select:focus { border-color: var(--accent); }
+    #year-select option { background: var(--surface2); }
+    .toggles { display: flex; gap: 12px; }
+    .toggle-row { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; cursor: pointer; color: var(--text); white-space: nowrap; }
+    .toggle-row input { accent-color: var(--accent); }
+    .header-stats { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+    .hstat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .hstat-val { font-family: 'IBM Plex Mono', monospace; font-size: 1.1rem; font-weight: 600; color: var(--accent); line-height: 1; }
+    .hstat-label { font-size: 0.57rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.7px; white-space: nowrap; }
+
+    /* LAYOUT — critical: explicit heights everywhere */
+    #app { display: flex; flex-direction: column; height: calc(100vh - 52px); }
+    #map-wrap { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+    #map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+
+    /* LEGEND OVERLAY */
+    #map-legend {
+      position: absolute; top: 12px; right: 12px; z-index: 999;
+      background: rgba(10,12,18,0.88); backdrop-filter: blur(6px);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 10px 13px; display: flex; flex-direction: column; gap: 7px; pointer-events: none;
+    }
+    .legend-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.56rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--accent); margin-bottom: 2px; }
+    .legend-row { display: flex; align-items: center; gap: 7px; font-size: 0.74rem; color: #ccc; white-space: nowrap; }
+    .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .dot.diamond { border-radius: 0; transform: rotate(45deg); width: 9px; height: 9px; }
+
+    /* CHARTS — fixed 200px, canvas sized explicitly */
+    #charts-row { height: 200px; flex-shrink: 0; display: flex; background: var(--surface); border-top: 1px solid var(--border); }
+    .chart-card { flex: 1; min-width: 0; padding: 10px 14px 8px; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+    .chart-card:last-child { border-right: none; }
+    .chart-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 6px; flex-shrink: 0; }
+    /* Key fix: give canvas a concrete height, not flex */
+    .chart-card canvas { display: block; width: 100% !important; height: 150px !important; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Calgary EMS Dashboard</h1>
+    <div class="sep"></div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">Year</span>
+      <select id="year-select">
+        <option value="">All</option>
+        <option value="2010">2010</option>
+        <option value="2011">2011</option>
+        <option value="2012">2012</option>
+        <option value="2013">2013</option>
+        <option value="2014">2014</option>
+        <option value="2015">2015</option>
+        <option value="2016">2016</option>
+        <option value="2017">2017</option>
+        <option value="2018">2018</option>
+        <option value="2019">2019</option>
+      </select>
+    </div>
+    <div class="sep"></div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">Layers</span>
+
+<div class="toggles">
+  <label class="toggle-row"><input type="checkbox" id="toggle-ems" checked><span class="dot" style="background:#e63946;"></span>EMS</label>
+  <label class="toggle-row"><input type="checkbox" id="toggle-fire" checked><span class="dot" style="background:#4da6ff;"></span>Fire</label>
+  <label class="toggle-row"><input type="checkbox" id="toggle-shared" checked><span class="dot" style="background:#c77dff;"></span>Shared</label>
+  <label class="toggle-row"><input type="checkbox" id="toggle-coverage"><span class="dot" style="background:#00ff88;"></span>Coverage</label>
+  <label class="toggle-row"><input type="checkbox" id="toggle-hospitals" checked><span style="display:inline-block;width:10px;height:10px;position:relative;flex-shrink:0;"><span style="position:absolute;top:3px;left:0;right:0;height:4px;background:#fff;border-radius:1px;"></span><span style="position:absolute;left:3px;top:0;bottom:0;width:4px;background:#fff;border-radius:1px;"></span></span>Hospitals</label>
+</div>
+
+    </div>
+    <div class="header-stats">
+      <div class="hstat"><span id="stat-total" class="hstat-val">–</span><span class="hstat-label">Total Calls</span></div>
+      <div class="sep"></div>
+      <div class="hstat"><span id="stat-ems" class="hstat-val">–</span><span class="hstat-label">EMS Stations</span></div>
+      <div class="sep"></div>
+      <div class="hstat"><span id="stat-fire" class="hstat-val">–</span><span class="hstat-label">Fire Stations</span></div>
+    </div>
+  </header>
+
+  <div id="app">
+    <div id="map-wrap">
+      <div id="map"></div>
+      <div id="map-legend">
+        <div class="legend-title">Legend</div>
+        <div class="legend-row"><span class="dot" style="background:#e63946;"></span>EMS Only</div>
+        <div class="legend-row"><span class="dot" style="background:#4da6ff;"></span>Fire Only</div>
+        <div class="legend-row"><span class="dot" style="background:#c77dff;"></span>EMS + Fire (Shared)</div>
+        <div class="legend-row"><span class="dot diamond" style="background:#ffd166;"></span>Fire HQ (Station 16)</div>
+	<div class="legend-row"><span class="dot diamond" style="background:#ff9f1c;"></span>EMS Superstation</div>
+        <div class="legend-row">
+          <span style="display:inline-block;width:10px;height:10px;position:relative;flex-shrink:0;">
+            <span style="position:absolute;top:3px;left:0;right:0;height:4px;background:#fff;border-radius:1px;"></span>
+            <span style="position:absolute;left:3px;top:0;bottom:0;width:4px;background:#fff;border-radius:1px;"></span>
+          </span>Hospital
+        </div>
+      </div>
+    </div>
+
+    <div id="charts-row">
+      <div class="chart-card"><div class="chart-title">Calls by Month</div><canvas id="chart-month"></canvas></div>
+      <div class="chart-card"><div class="chart-title">Calls by Day of Week</div><canvas id="chart-day"></canvas></div>
+      <div class="chart-card"><div class="chart-title">Calls by Incident Type</div><canvas id="chart-type"></canvas></div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
