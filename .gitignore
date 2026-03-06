@@ -4,3 +4,4 @@ node_modules/
 *_bkup
 cloudflared.deb
 sudo
+data/

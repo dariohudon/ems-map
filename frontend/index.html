@@ -27,14 +27,16 @@
     .ctrl-group { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .ctrl-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--accent); white-space: nowrap; }
     .layer-btn {
-      display: flex; align-items: center; gap: 7px;
-      background: none; border: none; color: #ccc; font-size: 0.74rem;
-      cursor: pointer; padding: 4px 0; text-align: left; width: 100%; white-space: nowrap;
-      opacity: 0.35; transition: opacity 0.15s, color 0.1s;
-      font-family: 'IBM Plex Sans', sans-serif; position: relative;
+      background: rgba(10,12,18,0.88); backdrop-filter: blur(6px);
+      border: 1px solid var(--c, var(--border)); border-radius: 6px;
+      padding: 6px 12px; cursor: pointer; color: var(--c, #888);
+      font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem;
+      text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+      width: 100%; text-align: left;
+      opacity: 0.38; transition: opacity 0.15s, background 0.1s; position: relative;
     }
     .layer-btn.active { opacity: 1; }
-    .layer-btn:hover { color: #fff; }
+    .layer-btn:hover { background: rgba(17,20,32,0.95); }
     .layer-btn[data-tip]::after {
       content: attr(data-tip);
       position: absolute; top: 50%; right: calc(100% + 10px); transform: translateY(-50%);
@@ -58,7 +60,7 @@
       position: absolute; top: 12px; right: 12px; z-index: 999;
       background: rgba(10,12,18,0.88); backdrop-filter: blur(6px);
       border: 1px solid var(--border); border-radius: 6px;
-      padding: 10px 13px; display: flex; flex-direction: column; gap: 7px; pointer-events: none;
+      padding: 10px 13px; display: flex; flex-direction: column; gap: 7px;
     }
     .legend-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.56rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--accent); margin-bottom: 2px; }
     .legend-row { display: flex; align-items: center; gap: 7px; font-size: 0.74rem; color: #ccc; white-space: nowrap; }
@@ -289,13 +291,13 @@
       </div>
       <div id="map-legend">
         <div class="legend-title">Layers</div>
-        <button class="layer-btn active" data-layer="ems" data-tip="AHS Calgary Zone ambulance stations"><span class="dot" style="background:#4da6ff;"></span>EMS</button>
-        <button class="layer-btn active" data-layer="fire" data-tip="City of Calgary Fire Department stations"><span class="dot" style="background:#e63946;"></span>Fire</button>
-        <button class="layer-btn active" data-layer="shared" data-tip="Stations co-located with both EMS and Fire"><span class="dot" style="background:#c77dff;"></span>Shared</button>
-        <button class="layer-btn" data-layer="coverage" data-tip="Approximate 10 km response radius per station"><span class="dot" style="background:#00ff88;"></span>Coverage</button>
-        <button class="layer-btn active" data-layer="hospitals" data-tip="Acute care hospitals with emergency departments"><span style="display:inline-block;width:10px;height:10px;position:relative;flex-shrink:0;"><span style="position:absolute;top:3px;left:0;right:0;height:4px;background:#fff;border-radius:1px;"></span><span style="position:absolute;left:3px;top:0;bottom:0;width:4px;background:#fff;border-radius:1px;"></span></span>Hospitals</button>
-        <button class="layer-btn" data-layer="zones" data-tip="Estimated EMS response zones (Voronoi tessellation)"><span class="dot" style="background:#4da6ff;opacity:0.5;border:1px solid rgba(77,166,255,0.6);"></span>Zones</button>
-        <button class="layer-btn" data-layer="heatmap" data-tip="Ambulance position at time of dispatch — FOIP G-017, 2020"><span class="dot" style="background:#ff6b35;opacity:0.7;"></span>Dispatch</button>
+        <button class="layer-btn active" data-layer="ems" style="--c:#4da6ff" data-tip="AHS Calgary Zone ambulance stations">EMS</button>
+        <button class="layer-btn active" data-layer="fire" style="--c:#e63946" data-tip="City of Calgary Fire Department stations">Fire</button>
+        <button class="layer-btn active" data-layer="shared" style="--c:#c77dff" data-tip="Stations co-located with both EMS and Fire">Shared</button>
+        <button class="layer-btn" data-layer="coverage" style="--c:#00ff88" data-tip="Approximate 10 km response radius per station">Coverage</button>
+        <button class="layer-btn active" data-layer="hospitals" style="--c:#ffffff" data-tip="Acute care hospitals with emergency departments">Hospitals</button>
+        <button class="layer-btn" data-layer="zones" style="--c:#4da6ff" data-tip="Estimated EMS response zones (Voronoi tessellation)">Zones</button>
+        <button class="layer-btn" data-layer="heatmap" style="--c:#ff6b35" data-tip="Ambulance position at time of dispatch — FOIP G-017, 2020">Dispatch</button>
         <div style="height:6px;border-top:1px solid var(--border);margin-top:4px;"></div>
         <div class="legend-row" style="opacity:0.5;font-size:0.68rem;"><span class="dot diamond" style="background:#ffd166;"></span>Fire HQ</div>
         <div class="legend-row" style="opacity:0.5;font-size:0.68rem;"><span class="dot diamond" style="background:#ff9f1c;"></span>Superstation</div>
