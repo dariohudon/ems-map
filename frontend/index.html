@@ -68,16 +68,20 @@
     .dot.diamond { border-radius: 0; transform: rotate(45deg); width: 9px; height: 9px; }
 
     /* CHARTS — hidden by default, toggled via button */
-    #charts-row { height: 200px; flex-shrink: 0; display: none; background: var(--surface); border-top: 1px solid var(--border); }
+    #charts-row { height: 250px; flex-shrink: 0; display: none; background: var(--surface); border-top: 1px solid var(--border); }
     #charts-row.charts-visible { display: flex; }
-    #ahs-charts-row { height: 200px; flex-shrink: 0; display: none; background: var(--surface); border-top: 1px solid var(--border); }
+    #ahs-charts-row { height: 250px; flex-shrink: 0; display: none; background: var(--surface); border-top: 1px solid var(--border); }
     #ahs-charts-row.charts-visible { display: flex; }
     #correlate-row { height: 330px; flex-shrink: 0; display: none; background: var(--surface); border-top: 1px solid var(--border); }
     #correlate-row.charts-visible { display: flex; }
-    #correlate-row .chart-card canvas { height: 250px !important; }
+    #correlate-row .chart-body canvas { height: 240px !important; }
     #correlate-controls {
-      width: 200px; flex-shrink: 0; padding: 12px 14px; border-right: 1px solid var(--border);
-      display: flex; flex-direction: column; gap: 10px; justify-content: center;
+      width: 200px; flex-shrink: 0; border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+    }
+    #correlate-inner {
+      padding: 12px 14px; display: flex; flex-direction: column; gap: 10px;
+      justify-content: center; flex: 1;
     }
     .correlate-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 2px; }
     .correlate-select {
@@ -87,11 +91,27 @@
     }
     .correlate-select:focus { border-color: var(--accent); }
     #correlate-note { font-size: 0.6rem; color: var(--muted); line-height: 1.4; margin-top: 2px; }
-    .chart-card { flex: 1; min-width: 0; padding: 10px 14px 8px; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+    .chart-card { flex: 1; min-width: 0; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
     .chart-card:last-child { border-right: none; }
-    .chart-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 6px; flex-shrink: 0; }
-    /* Key fix: give canvas a concrete height, not flex */
-    .chart-card canvas { display: block; width: 100% !important; height: 150px !important; }
+    .chart-header {
+      padding: 14px 16px 11px; border-bottom: 1px solid var(--border);
+      border-left: 2px solid var(--panel-accent, var(--accent)); flex-shrink: 0;
+    }
+    .chart-section-tag {
+      display: block; font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.51rem; text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--muted); margin-bottom: 5px;
+    }
+    .chart-title {
+      font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; font-weight: 600;
+      color: var(--panel-accent, var(--accent)); line-height: 1.2; margin-bottom: 3px;
+    }
+    .chart-subtitle {
+      font-family: 'IBM Plex Sans', sans-serif; font-size: 0.62rem; font-weight: 300;
+      color: var(--muted); line-height: 1.3;
+    }
+    .chart-body { flex: 1; min-height: 0; padding: 10px 14px 8px; }
+    .chart-body canvas { display: block; width: 100% !important; height: 150px !important; }
 
     /* STATION PANEL */
     #station-panel {
@@ -136,24 +156,39 @@
       padding: 7px 14px; cursor: pointer; color: var(--accent);
       font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem;
       text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+      opacity: 0.4; transition: opacity 0.15s, background 0.1s, border-color 0.1s;
     }
-    #btn-charts:hover { border-color: var(--accent); background: rgba(17,20,32,0.95); }
+    #btn-charts:hover { border-color: var(--accent); background: rgba(17,20,32,0.95); opacity: 0.7; }
+    #btn-charts.active { opacity: 1; border-color: var(--accent); }
     #btn-ahs-charts {
       background: rgba(10,12,18,0.88); backdrop-filter: blur(6px);
       border: 1px solid var(--border); border-radius: 6px;
       padding: 7px 14px; cursor: pointer; color: #ff9f1c;
       font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem;
       text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+      opacity: 0.4; transition: opacity 0.15s, background 0.1s, border-color 0.1s;
     }
-    #btn-ahs-charts:hover { border-color: #ff9f1c; background: rgba(17,20,32,0.95); }
+    #btn-ahs-charts:hover { border-color: #ff9f1c; background: rgba(17,20,32,0.95); opacity: 0.7; }
+    #btn-ahs-charts.active { opacity: 1; border-color: #ff9f1c; }
     #btn-correlate {
       background: rgba(10,12,18,0.88); backdrop-filter: blur(6px);
       border: 1px solid var(--border); border-radius: 6px;
       padding: 7px 14px; cursor: pointer; color: #06d6a0;
       font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem;
       text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+      opacity: 0.4; transition: opacity 0.15s, background 0.1s, border-color 0.1s;
     }
-    #btn-correlate:hover { border-color: #06d6a0; background: rgba(17,20,32,0.95); }
+    #btn-correlate:hover { border-color: #06d6a0; background: rgba(17,20,32,0.95); opacity: 0.7; }
+    #btn-correlate.active { opacity: 1; border-color: #06d6a0; }
+    #btn-theme {
+      background: rgba(10,12,18,0.88); backdrop-filter: blur(6px);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 7px 14px; cursor: pointer; color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem;
+      text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+      transition: background 0.1s, border-color 0.1s, color 0.1s;
+    }
+    #btn-theme:hover { border-color: var(--muted); background: rgba(17,20,32,0.95); color: var(--text); }
     #charts-controls #year-select {
       display: none;
       background: rgba(10,12,18,0.88); backdrop-filter: blur(6px);
@@ -229,10 +264,9 @@
         width: 100%;
         border-right: none;
         border-bottom: 1px solid var(--border);
-        padding: 12px 14px;
       }
       .chart-card:last-child { border-bottom: none; }
-      .chart-card canvas { height: 180px !important; }
+      .chart-body canvas { height: 180px !important; }
     }
   </style>
 </head>
@@ -272,8 +306,6 @@
       </div>
       <div id="charts-controls">
         <button id="btn-charts">City Data <span id="btn-charts-arrow">↑</span></button>
-        <button id="btn-ahs-charts">AHS Data <span id="btn-ahs-charts-arrow">↑</span></button>
-        <button id="btn-correlate">Correlate <span id="btn-correlate-arrow">↑</span></button>
         <select id="year-select">
           <option value="">All Years</option>
           <option value="2010">2010</option>
@@ -288,6 +320,9 @@
           <option value="2019">2019</option>
           <option value="2020">2020</option>
         </select>
+        <button id="btn-ahs-charts">AHS Data <span id="btn-ahs-charts-arrow">↑</span></button>
+        <button id="btn-correlate">Correlate <span id="btn-correlate-arrow">↑</span></button>
+        <button id="btn-theme">Dark ↺</button>
       </div>
       <div id="map-legend">
         <div class="legend-title">Layers</div>
@@ -304,45 +339,97 @@
       </div>
     </div>
 
-    <div id="charts-row">
-      <div class="chart-card"><div class="chart-title">Calls by Month</div><canvas id="chart-month"></canvas></div>
-      <div class="chart-card"><div class="chart-title">Calls by Day of Week</div><canvas id="chart-day"></canvas></div>
-      <div class="chart-card"><div class="chart-title">Calls by Incident Type</div><canvas id="chart-type"></canvas></div>
+    <div id="charts-row" style="--panel-accent: #4da6ff">
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-section-tag">City of Calgary Open Data</span>
+          <div class="chart-title">Calls by Month</div>
+          <div class="chart-subtitle">Seasonal distribution · 2010–2020</div>
+        </div>
+        <div class="chart-body"><canvas id="chart-month"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-section-tag">City of Calgary Open Data</span>
+          <div class="chart-title">Calls by Day of Week</div>
+          <div class="chart-subtitle">Weekly demand pattern · 2010–2020</div>
+        </div>
+        <div class="chart-body"><canvas id="chart-day"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-section-tag">City of Calgary Open Data</span>
+          <div class="chart-title">Calls by Incident Type</div>
+          <div class="chart-subtitle">8 categories · ~570k calls total</div>
+        </div>
+        <div class="chart-body"><canvas id="chart-type"></canvas></div>
+      </div>
     </div>
-    <div id="ahs-charts-row">
-      <div class="chart-card"><div class="chart-title">Red/Orange Alerts by Year</div><canvas id="chart-alerts"></canvas></div>
-      <div class="chart-card"><div class="chart-title">TOC Lost Hours by Fiscal Year</div><canvas id="chart-toc"></canvas></div>
-      <div class="chart-card"><div class="chart-title">EMS Event Volume by Fiscal Year</div><canvas id="chart-volumes"></canvas></div>
+    <div id="ahs-charts-row" style="--panel-accent: #ff9f1c">
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-section-tag">AHS FOIP · 2020-G-053 / G-121 / G-238</span>
+          <div class="chart-title">Red / Orange Alerts</div>
+          <div class="chart-subtitle">Calgary Metro Dispatch Group · 2018–2020</div>
+        </div>
+        <div class="chart-body"><canvas id="chart-alerts"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-section-tag">AHS FOIP · 2020-G-172</span>
+          <div class="chart-title">TOC Lost Hours</div>
+          <div class="chart-subtitle">Hospital offload delays · FY 2015/16–2020/21</div>
+        </div>
+        <div class="chart-body"><canvas id="chart-toc"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-section-tag">AHS FOIP · 2020-G-180 / G-172</span>
+          <div class="chart-title">EMS Event Volume</div>
+          <div class="chart-subtitle">Emergency, non-emergency &amp; IFT · by fiscal year</div>
+        </div>
+        <div class="chart-body"><canvas id="chart-volumes"></canvas></div>
+      </div>
     </div>
-    <div id="correlate-row">
+    <div id="correlate-row" style="--panel-accent: #06d6a0">
       <div id="correlate-controls">
-        <div>
-          <div class="correlate-label">Series A</div>
-          <select id="correlate-a" class="correlate-select">
-            <option value="toc">TOC Lost Hours (FY)</option>
-            <option value="volume">EMS Total Events (FY)</option>
-            <option value="avail">Calgary Metro Available % (FY)</option>
-            <option value="red">Red Alerts (CY)</option>
-            <option value="orange">Orange Alerts (CY)</option>
-            <option value="sick">Sick Hours (CY)</option>
-          </select>
+        <div class="chart-header">
+          <span class="chart-section-tag">AHS FOIP Data</span>
+          <div class="chart-title">Configure</div>
         </div>
-        <div>
-          <div class="correlate-label">Series B</div>
-          <select id="correlate-b" class="correlate-select">
-            <option value="toc">TOC Lost Hours (FY)</option>
-            <option value="volume" selected>EMS Total Events (FY)</option>
-            <option value="avail">Calgary Metro Available % (FY)</option>
-            <option value="red">Red Alerts (CY)</option>
-            <option value="orange">Orange Alerts (CY)</option>
-            <option value="sick">Sick Hours (CY)</option>
-          </select>
+        <div id="correlate-inner">
+          <div>
+            <div class="correlate-label">Series A</div>
+            <select id="correlate-a" class="correlate-select">
+              <option value="toc">TOC Lost Hours (FY)</option>
+              <option value="volume">EMS Total Events (FY)</option>
+              <option value="avail">Calgary Metro Available % (FY)</option>
+              <option value="red">Red Alerts (CY)</option>
+              <option value="orange">Orange Alerts (CY)</option>
+              <option value="sick">Sick Hours (CY)</option>
+            </select>
+          </div>
+          <div>
+            <div class="correlate-label">Series B</div>
+            <select id="correlate-b" class="correlate-select">
+              <option value="toc">TOC Lost Hours (FY)</option>
+              <option value="volume" selected>EMS Total Events (FY)</option>
+              <option value="avail">Calgary Metro Available % (FY)</option>
+              <option value="red">Red Alerts (CY)</option>
+              <option value="orange">Orange Alerts (CY)</option>
+              <option value="sick">Sick Hours (CY)</option>
+            </select>
+          </div>
+          <div id="correlate-note">FY = fiscal year (Apr–Mar). CY = calendar year. Mixed FY/CY pairs show separate time axes.</div>
         </div>
-        <div id="correlate-note">FY = fiscal year (Apr–Mar). CY = calendar year. Mixed FY/CY pairs show separate time axes.</div>
       </div>
       <div class="chart-card" style="flex:1;border-right:none;">
-        <div class="chart-title">Cross-Reference</div>
-        <canvas id="chart-correlate"></canvas>
+        <div class="chart-header">
+          <span class="chart-section-tag">AHS FOIP Data</span>
+          <div class="chart-title">Cross-Reference</div>
+          <div class="chart-subtitle">Dual-axis comparison of any two metrics</div>
+        </div>
+        <div class="chart-body"><canvas id="chart-correlate"></canvas></div>
       </div>
     </div>
   </div>

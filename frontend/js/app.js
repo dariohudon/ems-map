@@ -3,7 +3,13 @@ const CALGARY_CENTER = [51.0447, -114.0719];
 const ZOOM_LEVEL = 11;
 
 const map = L.map('map').setView(CALGARY_CENTER, ZOOM_LEVEL);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+var tileThemes = [
+  { label: 'Dark',    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' },
+  { label: 'Light',   url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png' },
+  { label: 'Neutral', url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png' }
+];
+var currentThemeIdx = 0;
+var tileLayerObj = L.tileLayer(tileThemes[0].url, {
   attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
   subdomains: 'abcd', maxZoom: 19
 }).addTo(map);
@@ -226,6 +232,12 @@ document.getElementById('btn-share').addEventListener('click', function() {
 document.getElementById('panel-close').addEventListener('click', closePanel);
 map.on('click', closePanel);
 
+document.getElementById('btn-theme').addEventListener('click', function() {
+  currentThemeIdx = (currentThemeIdx + 1) % tileThemes.length;
+  tileLayerObj.setUrl(tileThemes[currentThemeIdx].url);
+  this.textContent = tileThemes[currentThemeIdx].label + ' ↺';
+});
+
 function drawZones(stations) {
   zoneLayer.clearLayers();
   var points = [], colors = [];
@@ -426,6 +438,8 @@ document.querySelectorAll('.layer-btn').forEach(function(btn) {
 // ── EXCLUSIVE CHART PANELS ────────────────────────────────────────────────────
 var currentChartRow = null;
 
+var chartBtnMap = { 'charts-row': 'btn-charts', 'ahs-charts-row': 'btn-ahs-charts', 'correlate-row': 'btn-correlate' };
+
 function toggleChartRow(rowId, arrowId, onOpen) {
   var opening = currentChartRow !== rowId;
   // Close whatever is open
@@ -436,12 +450,17 @@ function toggleChartRow(rowId, arrowId, onOpen) {
   document.getElementById('btn-ahs-charts-arrow').textContent = '↑';
   document.getElementById('btn-correlate-arrow').textContent = '↑';
   document.getElementById('year-select').classList.remove('year-visible');
+  // Deactivate all chart buttons
+  ['btn-charts','btn-ahs-charts','btn-correlate'].forEach(function(id) {
+    document.getElementById(id).classList.remove('active');
+  });
   currentChartRow = null;
 
   if (opening) {
     currentChartRow = rowId;
     document.getElementById(rowId).classList.add('charts-visible');
     document.getElementById(arrowId).textContent = '↓';
+    document.getElementById(chartBtnMap[rowId]).classList.add('active');
     if (onOpen) onOpen();
   }
 }
