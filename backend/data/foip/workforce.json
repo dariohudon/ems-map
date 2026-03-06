@@ -1,0 +1,45 @@
+{
+  "source": "FOIP requests 2020-G-053, 2021-G-121 — Calgary Zone EMS Workforce Data",
+  "notes": {
+    "overtimeHours": "Total overtime hours worked by Calgary Zone EMS paramedics",
+    "sickHours": "Total sick hours taken by Calgary Zone EMS paramedics",
+    "overtimeSalary2019": "Calgary Zone EMS Operations overtime salary cost for 2019 (calendar year)",
+    "sickRate2019": "Sick rate as percentage of paid hours for 2019"
+  },
+  "byCalendarYear": [
+    {
+      "year": 2018,
+      "overtimeHours": 55359.77,
+      "sickHours": 83873.18,
+      "source": "2021-G-121"
+    },
+    {
+      "year": 2019,
+      "overtimeHours": null,
+      "overtimeSalary": 4855013,
+      "sickHours": 42476.05,
+      "sickRatePercent": 4.20,
+      "overtimeSalaryByMonth": [
+        { "month": "Jan", "salary": 421893 },
+        { "month": "Feb", "salary": 611044 },
+        { "month": "Mar", "salary": 593057 },
+        { "month": "Apr", "salary": 437862 },
+        { "month": "May", "salary": 380938 },
+        { "month": "Jun", "salary": 371049 },
+        { "month": "Jul", "salary": 510084 },
+        { "month": "Aug", "salary": 277819 },
+        { "month": "Sep", "salary": 347906 },
+        { "month": "Oct", "salary": 368941 },
+        { "month": "Nov", "salary": 301461 },
+        { "month": "Dec", "salary": 232960 }
+      ],
+      "source": "2020-G-053"
+    },
+    {
+      "year": 2020,
+      "overtimeHours": 35501.47,
+      "sickHours": 104406.64,
+      "source": "2021-G-121"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "source": "FOIP requests 2020-G-053, 2021-G-121, 2021-G-184, 2021-G-238 — Calgary Metro Dispatch Group",
+  "notes": {
+    "redAlert": "0 units available in Calgary Metro Dispatch Group",
+    "orangeAlert": "1-3 units available in Calgary Metro Dispatch Group",
+    "orangeTracking": "City of Calgary Dispatch implemented Orange Alert tracking on 2017-06-28",
+    "cadUpgrade": "AHS CAD software upgraded June 14, 2021 — Jun 2021 data is partial (Jun 1-14 only)"
+  },
+  "byCalendarYear": [
+    {
+      "year": 2018,
+      "red": { "count": 917, "avgDurationSec": 99.74, "totalDurationSec": 91458 },
+      "orange": { "count": 14051, "avgDurationSec": 54.55, "totalDurationSec": 766474 },
+      "source": "2021-G-121"
+    },
+    {
+      "year": 2019,
+      "red": { "count": 681, "avgDurationSec": 93.82, "totalDurationSec": 63891 },
+      "orange": { "count": 11542, "avgDurationSec": 55.95, "totalDurationSec": 645758 },
+      "source": "2020-G-053 (red), 2021-G-121 (orange)"
+    },
+    {
+      "year": 2020,
+      "red": { "count": 3324, "avgDurationSec": 103.03, "totalDurationSec": 342462 },
+      "orange": { "count": 36570, "avgDurationSec": 55.28, "totalDurationSec": 2021664 },
+      "source": "2021-G-121"
+    }
+  ],
+  "byFiscalYear": [
+    {
+      "fiscalYear": "2017/18",
+      "note": "Orange tracking started 2017-06-28; partial year",
+      "orange": { "count": 402, "avgDurationSec": 54.29 },
+      "source": "2021-G-238"
+    },
+    {
+      "fiscalYear": "2018/19",
+      "orange": { "count": 358, "avgDurationSec": 54.31 },
+      "source": "2021-G-238"
+    },
+    {
+      "fiscalYear": "2019/20",
+      "orange": { "count": 446, "avgDurationSec": 56.55 },
+      "source": "2021-G-238"
+    },
+    {
+      "fiscalYear": "2020/21",
+      "orange": { "count": 515, "avgDurationSec": 51.27 },
+      "source": "2021-G-238"
+    },
+    {
+      "fiscalYear": "2021/22",
+      "note": "Partial year: Apr 1 - Sep 2, 2021 only",
+      "orange": { "count": 410, "avgDurationSec": 29.50 },
+      "source": "2021-G-238"
+    }
+  ],
+  "monthlyBreakdown": [
+    { "month": "2020-06", "red": 92, "orange": 1378, "note": "Jun 2020" },
+    { "month": "2020-07", "red": 360, "orange": 4260 },
+    { "month": "2020-08", "red": 426, "orange": 5192 },
+    { "month": "2020-09", "red": 558, "orange": 4892 },
+    { "month": "2020-10", "red": 511, "orange": 5550 },
+    { "month": "2020-11", "red": 296, "orange": 2781 },
+    { "month": "2020-12", "red": 302, "orange": 3508 },
+    { "month": "2021-01", "red": 223, "orange": 3316 },
+    { "month": "2021-02", "red": 154, "orange": 4649 },
+    { "month": "2021-03", "red": 105, "orange": 4399 },
+    { "month": "2021-04", "red": 247, "orange": 6740 },
+    { "month": "2021-05", "red": 295, "orange": 7468 },
+    { "month": "2021-06", "red": 209, "orange": 5191, "note": "Partial: Jun 1-14 only (CAD upgrade Jun 14)" }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "source": "FOIP request 2020-G-173 — AHS EMS Unit Availability by Fiscal Year, Calgary Zone",
+  "notes": {
+    "availablePercent": "% of logged-on time unit was available for dispatch (not on a call, not out of service)",
+    "onEvent911Percent": "% of time unit was committed to a 911 emergency call",
+    "onEventIFTPercent": "% of time unit was on an Interfacility Transfer call",
+    "totalOnEventPercent": "% of time unit was on any type of call",
+    "totalLoggedOnHours": "Total hours unit was logged onto the CAD system in the fiscal year",
+    "unitCommunity": "The community where the unit is based",
+    "unitService": "The EMS service that operates the unit (AHS Calgary Metro = urban Calgary ambulances)",
+    "shiftType": "Daytime / Night / Core-Flex / Call-in",
+    "caution": "Pre-2018/19 data has CAD platform reliability caveats noted by AHS"
+  },
+  "calgaryMetroSummaryByFY": [
+    {
+      "fiscalYear": "2015/16",
+      "unitService": "AHS - Calgary Metro",
+      "avgAvailablePercent": 29.8,
+      "avgOnEvent911Percent": 53.8,
+      "avgOnEventIFTPercent": 1.6,
+      "avgTotalOnEventPercent": 55.4,
+      "note": "Approximate averages across daytime units"
+    },
+    {
+      "fiscalYear": "2016/17",
+      "unitService": "AHS - Calgary Metro",
+      "avgAvailablePercent": 30.2,
+      "avgOnEvent911Percent": 54.1,
+      "avgOnEventIFTPercent": 1.7,
+      "avgTotalOnEventPercent": 55.8,
+      "note": "Approximate averages across daytime units"
+    },
+    {
+      "fiscalYear": "2017/18",
+      "unitService": "AHS - Calgary Metro",
+      "avgAvailablePercent": 32.4,
+      "avgOnEvent911Percent": 52.4,
+      "avgOnEventIFTPercent": 1.9,
+      "avgTotalOnEventPercent": 54.3,
+      "note": "Approximate averages across daytime units"
+    },
+    {
+      "fiscalYear": "2018/19",
+      "unitService": "AHS - Calgary Metro",
+      "avgAvailablePercent": 25.0,
+      "avgOnEvent911Percent": 56.1,
+      "avgOnEventIFTPercent": 1.8,
+      "avgTotalOnEventPercent": 57.9,
+      "note": "Approximate averages across daytime units"
+    },
+    {
+      "fiscalYear": "2019/20",
+      "unitService": "AHS - Calgary Metro",
+      "avgAvailablePercent": 22.8,
+      "avgOnEvent911Percent": 58.7,
+      "avgOnEventIFTPercent": 1.8,
+      "avgTotalOnEventPercent": 60.5,
+      "note": "Approximate averages across daytime units"
+    },
+    {
+      "fiscalYear": "2020/21",
+      "unitService": "AHS - Calgary Metro",
+      "avgAvailablePercent": 23.5,
+      "avgOnEvent911Percent": 57.9,
+      "avgOnEventIFTPercent": 1.8,
+      "avgTotalOnEventPercent": 59.7,
+      "note": "Approximate averages across daytime units; partial COVID-19 year"
+    }
+  ],
+  "byCommunityAndFY": [
+    {
+      "community": "Calgary (Metro)",
+      "service": "AHS - Calgary Metro",
+      "data": [
+        { "fiscalYear": "2015/16", "daytimeAvgAvailable": 30.2, "daytimeAvgOnEvent": 55.3, "nightAvgAvailable": 32.8, "nightAvgOnEvent": 53.8 },
+        { "fiscalYear": "2016/17", "daytimeAvgAvailable": 30.5, "daytimeAvgOnEvent": 55.0, "nightAvgAvailable": 33.1, "nightAvgOnEvent": 53.5 },
+        { "fiscalYear": "2017/18", "daytimeAvgAvailable": 32.6, "daytimeAvgOnEvent": 52.5, "nightAvgAvailable": 35.2, "nightAvgOnEvent": 51.1 },
+        { "fiscalYear": "2018/19", "daytimeAvgAvailable": 25.4, "daytimeAvgOnEvent": 57.4, "nightAvgAvailable": 30.8, "nightAvgOnEvent": 54.2 },
+        { "fiscalYear": "2019/20", "daytimeAvgAvailable": 23.1, "daytimeAvgOnEvent": 59.6, "nightAvgAvailable": 28.5, "nightAvgOnEvent": 56.3 },
+        { "fiscalYear": "2020/21", "daytimeAvgAvailable": 23.9, "daytimeAvgOnEvent": 58.9, "nightAvgAvailable": 28.1, "nightAvgOnEvent": 56.0 }
+      ]
+    },
+    {
+      "community": "Cochrane",
+      "service": "AHS - Calgary SR",
+      "data": [
+        { "fiscalYear": "2015/16", "daytimeAvgAvailable": 66.2, "daytimeAvgOnEvent": 23.7 },
+        { "fiscalYear": "2016/17", "daytimeAvgAvailable": 65.0, "daytimeAvgOnEvent": 24.5 },
+        { "fiscalYear": "2017/18", "daytimeAvgAvailable": 62.1, "daytimeAvgOnEvent": 25.8 },
+        { "fiscalYear": "2018/19", "daytimeAvgAvailable": 60.5, "daytimeAvgOnEvent": 24.6 },
+        { "fiscalYear": "2019/20", "daytimeAvgAvailable": 57.5, "daytimeAvgOnEvent": 26.8 },
+        { "fiscalYear": "2020/21", "daytimeAvgAvailable": 57.0, "daytimeAvgOnEvent": 28.2 }
+      ]
+    },
+    {
+      "community": "Airdrie",
+      "service": "AHS - Calgary SR",
+      "data": [
+        { "fiscalYear": "2015/16", "daytimeAvgAvailable": 56.0, "daytimeAvgOnEvent": 26.8 },
+        { "fiscalYear": "2016/17", "daytimeAvgAvailable": 55.3, "daytimeAvgOnEvent": 27.1 },
+        { "fiscalYear": "2017/18", "daytimeAvgAvailable": 52.8, "daytimeAvgOnEvent": 29.3 },
+        { "fiscalYear": "2018/19", "daytimeAvgAvailable": 54.3, "daytimeAvgOnEvent": 25.8 },
+        { "fiscalYear": "2019/20", "daytimeAvgAvailable": 50.9, "daytimeAvgOnEvent": 30.5 },
+        { "fiscalYear": "2020/21", "daytimeAvgAvailable": 42.2, "daytimeAvgOnEvent": 33.5 }
+      ]
+    },
+    {
+      "community": "Strathmore",
+      "service": "Wheatland EMS",
+      "data": [
+        { "fiscalYear": "2015/16", "daytimeAvgAvailable": 71.2, "daytimeAvgOnEvent": 22.0 },
+        { "fiscalYear": "2016/17", "daytimeAvgAvailable": 70.8, "daytimeAvgOnEvent": 22.5 },
+        { "fiscalYear": "2017/18", "daytimeAvgAvailable": 65.3, "daytimeAvgOnEvent": 25.1 },
+        { "fiscalYear": "2018/19", "daytimeAvgAvailable": 64.6, "daytimeAvgOnEvent": 25.0 },
+        { "fiscalYear": "2019/20", "daytimeAvgAvailable": 65.1, "daytimeAvgOnEvent": 19.8 },
+        { "fiscalYear": "2020/21", "daytimeAvgAvailable": 63.3, "daytimeAvgOnEvent": 18.8 }
+      ]
+    }
+  ]
+}

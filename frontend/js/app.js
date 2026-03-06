@@ -15,6 +15,7 @@ const sharedLayer   = L.layerGroup().addTo(map);
 const emsLayer      = L.layerGroup().addTo(map);
 const hospitalLayer = L.layerGroup().addTo(map);
 var   cachedStations = [];
+var   heatLayer = null;
 
 function makeIcon(color, size, glow) {
   var s = size || 14;
@@ -388,16 +389,6 @@ async function loadStats(year) {
 document.getElementById('year-select').addEventListener('change', function() {
   loadStats(this.value || null);
 });
-document.getElementById('toggle-ems').addEventListener('change', function(e) {
-  if (e.target.checked) emsLayer.addTo(map); else map.removeLayer(emsLayer);
-});
-document.getElementById('toggle-fire').addEventListener('change', function(e) {
-  if (e.target.checked) fireLayer.addTo(map); else map.removeLayer(fireLayer);
-});
-document.getElementById('toggle-shared').addEventListener('change', function(e) {
-  if (e.target.checked) sharedLayer.addTo(map); else map.removeLayer(sharedLayer);
-});
-
 // --- Coverage layer (8-min / 10km radius) ---
 const coverageLayer = L.layerGroup();
 
@@ -412,22 +403,243 @@ function drawCoverage(stations, fireStations) {
   });
 }
 
-document.getElementById('toggle-coverage').addEventListener('change', function(e) {
-  if (e.target.checked) coverageLayer.addTo(map);
-  else map.removeLayer(coverageLayer);
+// ── LEGEND LAYER BUTTONS ──────────────────────────────────────────────────────
+document.querySelectorAll('.layer-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var layer = btn.dataset.layer;
+    var active = btn.classList.toggle('active');
+    switch (layer) {
+      case 'ems':      active ? emsLayer.addTo(map)      : map.removeLayer(emsLayer);      break;
+      case 'fire':     active ? fireLayer.addTo(map)     : map.removeLayer(fireLayer);     break;
+      case 'shared':   active ? sharedLayer.addTo(map)   : map.removeLayer(sharedLayer);   break;
+      case 'coverage': active ? coverageLayer.addTo(map) : map.removeLayer(coverageLayer); break;
+      case 'hospitals':active ? hospitalLayer.addTo(map) : map.removeLayer(hospitalLayer); break;
+      case 'zones':    active ? drawZones(cachedStations) : zoneLayer.clearLayers();       break;
+      case 'heatmap':
+        if (active) { loadHeatmap().then(function() { if (heatLayer) heatLayer.addTo(map); }); }
+        else if (heatLayer) { map.removeLayer(heatLayer); }
+        break;
+    }
+  });
 });
-document.getElementById('toggle-hospitals').addEventListener('change', function(e) {
-  if (e.target.checked) hospitalLayer.addTo(map); else map.removeLayer(hospitalLayer);
-});
-document.getElementById('toggle-zones').addEventListener('change', function(e) {
-  if (e.target.checked) drawZones(cachedStations); else zoneLayer.clearLayers();
-});
+
+// ── EXCLUSIVE CHART PANELS ────────────────────────────────────────────────────
+var currentChartRow = null;
+
+function toggleChartRow(rowId, arrowId, onOpen) {
+  var opening = currentChartRow !== rowId;
+  // Close whatever is open
+  if (currentChartRow) {
+    document.getElementById(currentChartRow).classList.remove('charts-visible');
+  }
+  document.getElementById('btn-charts-arrow').textContent = '↑';
+  document.getElementById('btn-ahs-charts-arrow').textContent = '↑';
+  document.getElementById('btn-correlate-arrow').textContent = '↑';
+  document.getElementById('year-select').classList.remove('year-visible');
+  currentChartRow = null;
+
+  if (opening) {
+    currentChartRow = rowId;
+    document.getElementById(rowId).classList.add('charts-visible');
+    document.getElementById(arrowId).textContent = '↓';
+    if (onOpen) onOpen();
+  }
+}
+
 document.getElementById('btn-charts').addEventListener('click', function() {
-  var row = document.getElementById('charts-row');
-  row.classList.toggle('charts-visible');
-  var open = row.classList.contains('charts-visible');
-  document.getElementById('btn-charts-arrow').textContent = open ? '↓' : '↑';
-  document.getElementById('year-select').classList.toggle('year-visible', open);
+  toggleChartRow('charts-row', 'btn-charts-arrow', function() {
+    document.getElementById('year-select').classList.add('year-visible');
+  });
+});
+
+// ── DISPATCH HEATMAP ──────────────────────────────────────────────────────────
+async function loadHeatmap() {
+  if (heatLayer) return; // already loaded
+  var res = await fetch(API_BASE + '/foip/dispatch-heatmap');
+  var data = await res.json();
+  var maxCount = Math.max.apply(null, data.clusters.map(function(c) { return c.approximateCount; }));
+  // Expand each cluster into weighted heat points
+  var points = [];
+  data.clusters.forEach(function(c) {
+    var intensity = c.approximateCount / maxCount;
+    // Add proportional number of points around each cluster center for better heat spread
+    var count = Math.max(1, Math.round(c.approximateCount / 10));
+    for (var i = 0; i < count; i++) {
+      var jitterLat = (Math.random() - 0.5) * 0.02;
+      var jitterLng = (Math.random() - 0.5) * 0.02;
+      points.push([c.lat + jitterLat, c.lng + jitterLng, intensity]);
+    }
+  });
+  heatLayer = L.heatLayer(points, {
+    radius: 28, blur: 20, maxZoom: 13,
+    gradient: { 0.2: '#ff6b35', 0.5: '#ff9f00', 0.8: '#ffdd00', 1.0: '#fff' }
+  });
+}
+
+// ── AHS SYSTEM DATA CHARTS ────────────────────────────────────────────────────
+var chartAlerts = null, chartToc = null, chartVolumes = null;
+
+var ahsBarOpts = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { display: true, labels: { color: '#aaa', font: { size: 9 }, boxWidth: 12, padding: 8 } } },
+  scales: {
+    x: { ticks: { color: '#556', font: { size: 9 } }, grid: { color: '#1a1d2a' } },
+    y: { ticks: { color: '#556', font: { size: 9 } }, grid: { color: '#1a1d2a' } }
+  }
+};
+
+async function loadAHSData() {
+  var [alertData, tocData, volumeData] = await Promise.all([
+    fetchFoipCached('/foip/alert-stats'),
+    fetchFoipCached('/foip/toc-hours'),
+    fetchFoipCached('/foip/event-volumes')
+  ]);
+
+  if (chartAlerts) chartAlerts.destroy();
+  if (chartToc) chartToc.destroy();
+  if (chartVolumes) chartVolumes.destroy();
+
+  // Alert stats — calendar year Red vs Orange counts
+  var calYears = alertData.byCalendarYear;
+  chartAlerts = new Chart(document.getElementById('chart-alerts'), {
+    type: 'bar',
+    options: Object.assign({}, ahsBarOpts, { scales: Object.assign({}, ahsBarOpts.scales, { x: { stacked: true, ticks: { color: '#556', font: { size: 9 } }, grid: { color: '#1a1d2a' } }, y: { stacked: true, ticks: { color: '#556', font: { size: 9 } }, grid: { color: '#1a1d2a' } } }) }),
+    data: {
+      labels: calYears.map(function(y) { return String(y.year); }),
+      datasets: [
+        { label: 'Red Alerts', data: calYears.map(function(y) { return y.red.count; }), backgroundColor: '#e6394699', borderColor: '#e63946', borderWidth: 1 },
+        { label: 'Orange Alerts', data: calYears.map(function(y) { return y.orange.count; }), backgroundColor: '#ff9f1c99', borderColor: '#ff9f1c', borderWidth: 1 }
+      ]
+    }
+  });
+
+  // TOC lost hours by fiscal year
+  var fyData = tocData.byFiscalYear;
+  chartToc = new Chart(document.getElementById('chart-toc'), {
+    type: 'bar',
+    options: Object.assign({}, ahsBarOpts, { plugins: { legend: { display: false } } }),
+    data: {
+      labels: fyData.map(function(d) { return d.fiscalYear; }),
+      datasets: [{
+        label: 'Lost Ambulance Hours',
+        data: fyData.map(function(d) { return d.lostAmbulanceHours; }),
+        backgroundColor: '#c77dff44', borderColor: '#c77dff', borderWidth: 1
+      }]
+    }
+  });
+
+  // Event volumes by fiscal year
+  chartVolumes = new Chart(document.getElementById('chart-volumes'), {
+    type: 'bar',
+    options: Object.assign({}, ahsBarOpts, { scales: Object.assign({}, ahsBarOpts.scales, { x: { stacked: true, ticks: { color: '#556', font: { size: 9 } }, grid: { color: '#1a1d2a' } }, y: { stacked: true, ticks: { color: '#556', font: { size: 9 } }, grid: { color: '#1a1d2a' } } }) }),
+    data: {
+      labels: volumeData.byFiscalYear.map(function(d) { return d.fiscalYear; }),
+      datasets: [
+        { label: 'Emergency', data: volumeData.byFiscalYear.map(function(d) { return d.emergency; }), backgroundColor: '#e6394666', borderColor: '#e63946', borderWidth: 1 },
+        { label: 'Non-Emerg 911', data: volumeData.byFiscalYear.map(function(d) { return d.nonEmergency911; }), backgroundColor: '#4da6ff66', borderColor: '#4da6ff', borderWidth: 1 },
+        { label: 'IFT', data: volumeData.byFiscalYear.map(function(d) { return d.ift; }), backgroundColor: '#06d6a066', borderColor: '#06d6a0', borderWidth: 1 }
+      ]
+    }
+  });
+}
+
+// ── CORRELATION VIEW ──────────────────────────────────────────────────────────
+var foipCache = {};
+var correlateChart = null;
+
+var CORRELATE_METRICS = [
+  { key: 'toc',    label: 'TOC Lost Hours (FY)',            endpoint: '/foip/toc-hours',         color: '#c77dff', timeType: 'FY' },
+  { key: 'volume', label: 'EMS Total Events (FY)',          endpoint: '/foip/event-volumes',     color: '#4da6ff', timeType: 'FY' },
+  { key: 'avail',  label: 'Calgary Metro Available % (FY)', endpoint: '/foip/unit-availability', color: '#06d6a0', timeType: 'FY' },
+  { key: 'red',    label: 'Red Alerts (CY)',                endpoint: '/foip/alert-stats',       color: '#e63946', timeType: 'CY' },
+  { key: 'orange', label: 'Orange Alerts (CY)',             endpoint: '/foip/alert-stats',       color: '#ff9f1c', timeType: 'CY' },
+  { key: 'sick',   label: 'Sick Hours (CY)',                endpoint: '/foip/workforce',         color: '#ffd166', timeType: 'CY' }
+];
+
+function extractMetricSeries(key, raw) {
+  if (key === 'toc')    return { labels: raw.byFiscalYear.map(function(x){return x.fiscalYear;}), values: raw.byFiscalYear.map(function(x){return x.lostAmbulanceHours;}) };
+  if (key === 'volume') return { labels: raw.byFiscalYear.map(function(x){return x.fiscalYear;}), values: raw.byFiscalYear.map(function(x){return x.total;}) };
+  if (key === 'avail')  return { labels: raw.calgaryMetroSummaryByFY.map(function(x){return x.fiscalYear;}), values: raw.calgaryMetroSummaryByFY.map(function(x){return x.avgAvailablePercent;}) };
+  if (key === 'red')    return { labels: raw.byCalendarYear.map(function(x){return String(x.year);}), values: raw.byCalendarYear.map(function(x){return x.red.count;}) };
+  if (key === 'orange') return { labels: raw.byCalendarYear.map(function(x){return String(x.year);}), values: raw.byCalendarYear.map(function(x){return x.orange.count;}) };
+  if (key === 'sick')   return { labels: raw.byCalendarYear.map(function(x){return String(x.year);}), values: raw.byCalendarYear.map(function(x){return x.sickHours;}) };
+}
+
+async function fetchFoipCached(endpoint) {
+  if (foipCache[endpoint]) return foipCache[endpoint];
+  var data = await fetch(API_BASE + endpoint).then(function(r) { return r.json(); });
+  foipCache[endpoint] = data;
+  return data;
+}
+
+async function renderCorrelate() {
+  var keyA = document.getElementById('correlate-a').value;
+  var keyB = document.getElementById('correlate-b').value;
+  var metaA = CORRELATE_METRICS.find(function(m) { return m.key === keyA; });
+  var metaB = CORRELATE_METRICS.find(function(m) { return m.key === keyB; });
+
+  var [rawA, rawB] = await Promise.all([
+    fetchFoipCached(metaA.endpoint),
+    fetchFoipCached(metaB.endpoint)
+  ]);
+
+  var seriesA = extractMetricSeries(keyA, rawA);
+  var seriesB = extractMetricSeries(keyB, rawB);
+
+  // Build unified label set preserving order: A labels then any B labels not in A
+  var labelSet = seriesA.labels.slice();
+  seriesB.labels.forEach(function(l) { if (labelSet.indexOf(l) === -1) labelSet.push(l); });
+
+  var dataA = labelSet.map(function(l) { var i = seriesA.labels.indexOf(l); return i >= 0 ? seriesA.values[i] : null; });
+  var dataB = labelSet.map(function(l) { var i = seriesB.labels.indexOf(l); return i >= 0 ? seriesB.values[i] : null; });
+
+  if (correlateChart) correlateChart.destroy();
+  correlateChart = new Chart(document.getElementById('chart-correlate'), {
+    type: 'line',
+    data: {
+      labels: labelSet,
+      datasets: [
+        {
+          label: metaA.label, data: dataA, yAxisID: 'yA',
+          borderColor: metaA.color, backgroundColor: metaA.color + '22',
+          borderWidth: 2, pointRadius: 4, tension: 0.3, fill: false
+        },
+        {
+          label: metaB.label, data: dataB, yAxisID: 'yB',
+          borderColor: metaB.color, backgroundColor: metaB.color + '22',
+          borderWidth: 2, pointRadius: 4, tension: 0.3, fill: false, borderDash: [6, 3]
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: true, labels: { color: '#aaa', font: { size: 9 }, boxWidth: 14, padding: 10 } } },
+      scales: {
+        x: { ticks: { color: '#556', font: { size: 9 } }, grid: { color: '#1a1d2a' } },
+        yA: { position: 'left',  ticks: { color: metaA.color, font: { size: 9 } }, grid: { color: '#1a1d2a' }, title: { display: true, text: metaA.label, color: metaA.color, font: { size: 8 } } },
+        yB: { position: 'right', ticks: { color: metaB.color, font: { size: 9 } }, grid: { display: false }, title: { display: true, text: metaB.label, color: metaB.color, font: { size: 8 } } }
+      }
+    }
+  });
+}
+
+var ahsDataLoaded = false;
+document.getElementById('btn-ahs-charts').addEventListener('click', function() {
+  toggleChartRow('ahs-charts-row', 'btn-ahs-charts-arrow', function() {
+    if (!ahsDataLoaded) { ahsDataLoaded = true; loadAHSData(); }
+  });
+});
+
+document.getElementById('btn-correlate').addEventListener('click', function() {
+  toggleChartRow('correlate-row', 'btn-correlate-arrow', function() {
+    renderCorrelate();
+  });
+});
+document.getElementById('correlate-a').addEventListener('change', function() {
+  if (currentChartRow === 'correlate-row') renderCorrelate();
+});
+document.getElementById('correlate-b').addEventListener('change', function() {
+  if (currentChartRow === 'correlate-row') renderCorrelate();
 });
 
 async function init() {

@@ -26,9 +26,23 @@
     .sep { width: 1px; height: 22px; background: var(--border); flex-shrink: 0; }
     .ctrl-group { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .ctrl-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--accent); white-space: nowrap; }
-    .toggles { display: flex; gap: 12px; }
-    .toggle-row { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; cursor: pointer; color: var(--text); white-space: nowrap; }
-    .toggle-row input { accent-color: var(--accent); }
+    .layer-btn {
+      display: flex; align-items: center; gap: 7px;
+      background: none; border: none; color: #ccc; font-size: 0.74rem;
+      cursor: pointer; padding: 4px 0; text-align: left; width: 100%; white-space: nowrap;
+      opacity: 0.35; transition: opacity 0.15s, color 0.1s;
+      font-family: 'IBM Plex Sans', sans-serif; position: relative;
+    }
+    .layer-btn.active { opacity: 1; }
+    .layer-btn:hover { color: #fff; }
+    .layer-btn[data-tip]::after {
+      content: attr(data-tip);
+      position: absolute; top: 50%; right: calc(100% + 10px); transform: translateY(-50%);
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 5px;
+      padding: 5px 9px; font-size: 0.68rem; color: var(--text); white-space: nowrap;
+      pointer-events: none; opacity: 0; transition: opacity 0.15s; z-index: 10000;
+    }
+    .layer-btn[data-tip]:hover::after { opacity: 1; }
     .header-stats { margin-left: auto; display: flex; align-items: center; gap: 16px; }
     .hstat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
     .hstat-val { font-family: 'IBM Plex Mono', monospace; font-size: 1.1rem; font-weight: 600; color: var(--accent); line-height: 1; }
@@ -54,6 +68,23 @@
     /* CHARTS — hidden by default, toggled via button */
     #charts-row { height: 200px; flex-shrink: 0; display: none; background: var(--surface); border-top: 1px solid var(--border); }
     #charts-row.charts-visible { display: flex; }
+    #ahs-charts-row { height: 200px; flex-shrink: 0; display: none; background: var(--surface); border-top: 1px solid var(--border); }
+    #ahs-charts-row.charts-visible { display: flex; }
+    #correlate-row { height: 330px; flex-shrink: 0; display: none; background: var(--surface); border-top: 1px solid var(--border); }
+    #correlate-row.charts-visible { display: flex; }
+    #correlate-row .chart-card canvas { height: 250px !important; }
+    #correlate-controls {
+      width: 200px; flex-shrink: 0; padding: 12px 14px; border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 10px; justify-content: center;
+    }
+    .correlate-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 2px; }
+    .correlate-select {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 4px;
+      color: var(--text); padding: 5px 8px; font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.6rem; cursor: pointer; outline: none; width: 100%;
+    }
+    .correlate-select:focus { border-color: var(--accent); }
+    #correlate-note { font-size: 0.6rem; color: var(--muted); line-height: 1.4; margin-top: 2px; }
     .chart-card { flex: 1; min-width: 0; padding: 10px 14px 8px; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
     .chart-card:last-child { border-right: none; }
     .chart-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 6px; flex-shrink: 0; }
@@ -105,6 +136,22 @@
       text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
     }
     #btn-charts:hover { border-color: var(--accent); background: rgba(17,20,32,0.95); }
+    #btn-ahs-charts {
+      background: rgba(10,12,18,0.88); backdrop-filter: blur(6px);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 7px 14px; cursor: pointer; color: #ff9f1c;
+      font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem;
+      text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+    }
+    #btn-ahs-charts:hover { border-color: #ff9f1c; background: rgba(17,20,32,0.95); }
+    #btn-correlate {
+      background: rgba(10,12,18,0.88); backdrop-filter: blur(6px);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 7px 14px; cursor: pointer; color: #06d6a0;
+      font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem;
+      text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+    }
+    #btn-correlate:hover { border-color: #06d6a0; background: rgba(17,20,32,0.95); }
     #charts-controls #year-select {
       display: none;
       background: rgba(10,12,18,0.88); backdrop-filter: blur(6px);
@@ -122,15 +169,16 @@
     #search-box {
       position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
       z-index: 999; display: flex;
-      background: rgba(10,12,18,0.88); backdrop-filter: blur(6px);
-      border: 1px solid var(--border); border-radius: 6px; overflow: hidden;
+      background: rgba(28,33,54,0.97); backdrop-filter: blur(8px);
+      border: 1px solid rgba(77,166,255,0.22); border-radius: 6px; overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
     }
     #search-input {
       background: transparent; border: none; outline: none;
       color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 0.82rem;
       padding: 8px 12px; width: 260px;
     }
-    #search-input::placeholder { color: var(--muted); }
+    #search-input::placeholder { color: #6a7590; }
     #search-btn {
       background: none; border: none; border-left: 1px solid var(--border);
       color: var(--accent); padding: 8px 12px; cursor: pointer; font-size: 1rem; line-height: 1;
@@ -169,7 +217,7 @@
       #panel-body { flex: 1; overflow-y: auto; }
 
       /* Historical data: stack charts vertically, scrollable */
-      #charts-row {
+      #charts-row, #ahs-charts-row, #correlate-row {
         flex-direction: column;
         height: 55vh; max-height: 55vh;
         overflow-y: auto;
@@ -190,20 +238,6 @@
 
   <header>
     <h1>Calgary EMS Dashboard</h1>
-    <div class="sep"></div>
-    <div class="ctrl-group">
-      <span class="ctrl-label">Layers</span>
-
-<div class="toggles">
-  <label class="toggle-row"><input type="checkbox" id="toggle-ems" checked><span class="dot" style="background:#4da6ff;"></span>EMS</label>
-  <label class="toggle-row"><input type="checkbox" id="toggle-fire" checked><span class="dot" style="background:#e63946;"></span>Fire</label>
-  <label class="toggle-row"><input type="checkbox" id="toggle-shared" checked><span class="dot" style="background:#c77dff;"></span>Shared</label>
-  <label class="toggle-row"><input type="checkbox" id="toggle-coverage"><span class="dot" style="background:#00ff88;"></span>Coverage</label>
-  <label class="toggle-row"><input type="checkbox" id="toggle-hospitals" checked><span style="display:inline-block;width:10px;height:10px;position:relative;flex-shrink:0;"><span style="position:absolute;top:3px;left:0;right:0;height:4px;background:#fff;border-radius:1px;"></span><span style="position:absolute;left:3px;top:0;bottom:0;width:4px;background:#fff;border-radius:1px;"></span></span>Hospitals</label>
-  <label class="toggle-row"><input type="checkbox" id="toggle-zones"><span class="dot" style="background:#4da6ff;opacity:0.5;border:1px solid rgba(77,166,255,0.6);"></span>Zones</label>
-</div>
-
-    </div>
     <div class="header-stats">
       <div class="hstat"><span id="stat-total" class="hstat-val">–</span><span class="hstat-label">Total Calls</span></div>
       <div class="sep"></div>
@@ -235,7 +269,9 @@
         </div>
       </div>
       <div id="charts-controls">
-        <button id="btn-charts">Historical Data <span id="btn-charts-arrow">↑</span></button>
+        <button id="btn-charts">City Data <span id="btn-charts-arrow">↑</span></button>
+        <button id="btn-ahs-charts">AHS Data <span id="btn-ahs-charts-arrow">↑</span></button>
+        <button id="btn-correlate">Correlate <span id="btn-correlate-arrow">↑</span></button>
         <select id="year-select">
           <option value="">All Years</option>
           <option value="2010">2010</option>
@@ -248,22 +284,21 @@
           <option value="2017">2017</option>
           <option value="2018">2018</option>
           <option value="2019">2019</option>
+          <option value="2020">2020</option>
         </select>
       </div>
       <div id="map-legend">
-        <div class="legend-title">Legend</div>
-        <div class="legend-row"><span class="dot" style="background:#4da6ff;"></span>EMS Station</div>
-        <div class="legend-row"><span class="dot" style="background:#e63946;"></span>Fire Station</div>
-        <div class="legend-row"><span class="dot" style="background:#c77dff;"></span>Shared Stations</div>
-        <div class="legend-row"><span class="dot diamond" style="background:#ffd166;"></span>Fire HQ (Station 16)</div>
-	<div class="legend-row"><span class="dot diamond" style="background:#ff9f1c;"></span>EMS Superstation</div>
-        <div class="legend-row">
-          <span style="display:inline-block;width:10px;height:10px;position:relative;flex-shrink:0;">
-            <span style="position:absolute;top:3px;left:0;right:0;height:4px;background:#fff;border-radius:1px;"></span>
-            <span style="position:absolute;left:3px;top:0;bottom:0;width:4px;background:#fff;border-radius:1px;"></span>
-          </span>Hospital
-        </div>
-        <div class="legend-row"><span class="dot" style="background:#4da6ff;opacity:0.5;border:1px solid rgba(77,166,255,0.6);"></span>EMS Response Zone</div>
+        <div class="legend-title">Layers</div>
+        <button class="layer-btn active" data-layer="ems" data-tip="AHS Calgary Zone ambulance stations"><span class="dot" style="background:#4da6ff;"></span>EMS</button>
+        <button class="layer-btn active" data-layer="fire" data-tip="City of Calgary Fire Department stations"><span class="dot" style="background:#e63946;"></span>Fire</button>
+        <button class="layer-btn active" data-layer="shared" data-tip="Stations co-located with both EMS and Fire"><span class="dot" style="background:#c77dff;"></span>Shared</button>
+        <button class="layer-btn" data-layer="coverage" data-tip="Approximate 10 km response radius per station"><span class="dot" style="background:#00ff88;"></span>Coverage</button>
+        <button class="layer-btn active" data-layer="hospitals" data-tip="Acute care hospitals with emergency departments"><span style="display:inline-block;width:10px;height:10px;position:relative;flex-shrink:0;"><span style="position:absolute;top:3px;left:0;right:0;height:4px;background:#fff;border-radius:1px;"></span><span style="position:absolute;left:3px;top:0;bottom:0;width:4px;background:#fff;border-radius:1px;"></span></span>Hospitals</button>
+        <button class="layer-btn" data-layer="zones" data-tip="Estimated EMS response zones (Voronoi tessellation)"><span class="dot" style="background:#4da6ff;opacity:0.5;border:1px solid rgba(77,166,255,0.6);"></span>Zones</button>
+        <button class="layer-btn" data-layer="heatmap" data-tip="Ambulance position at time of dispatch — FOIP G-017, 2020"><span class="dot" style="background:#ff6b35;opacity:0.7;"></span>Dispatch</button>
+        <div style="height:6px;border-top:1px solid var(--border);margin-top:4px;"></div>
+        <div class="legend-row" style="opacity:0.5;font-size:0.68rem;"><span class="dot diamond" style="background:#ffd166;"></span>Fire HQ</div>
+        <div class="legend-row" style="opacity:0.5;font-size:0.68rem;"><span class="dot diamond" style="background:#ff9f1c;"></span>Superstation</div>
       </div>
     </div>
 
@@ -272,8 +307,45 @@
       <div class="chart-card"><div class="chart-title">Calls by Day of Week</div><canvas id="chart-day"></canvas></div>
       <div class="chart-card"><div class="chart-title">Calls by Incident Type</div><canvas id="chart-type"></canvas></div>
     </div>
+    <div id="ahs-charts-row">
+      <div class="chart-card"><div class="chart-title">Red/Orange Alerts by Year</div><canvas id="chart-alerts"></canvas></div>
+      <div class="chart-card"><div class="chart-title">TOC Lost Hours by Fiscal Year</div><canvas id="chart-toc"></canvas></div>
+      <div class="chart-card"><div class="chart-title">EMS Event Volume by Fiscal Year</div><canvas id="chart-volumes"></canvas></div>
+    </div>
+    <div id="correlate-row">
+      <div id="correlate-controls">
+        <div>
+          <div class="correlate-label">Series A</div>
+          <select id="correlate-a" class="correlate-select">
+            <option value="toc">TOC Lost Hours (FY)</option>
+            <option value="volume">EMS Total Events (FY)</option>
+            <option value="avail">Calgary Metro Available % (FY)</option>
+            <option value="red">Red Alerts (CY)</option>
+            <option value="orange">Orange Alerts (CY)</option>
+            <option value="sick">Sick Hours (CY)</option>
+          </select>
+        </div>
+        <div>
+          <div class="correlate-label">Series B</div>
+          <select id="correlate-b" class="correlate-select">
+            <option value="toc">TOC Lost Hours (FY)</option>
+            <option value="volume" selected>EMS Total Events (FY)</option>
+            <option value="avail">Calgary Metro Available % (FY)</option>
+            <option value="red">Red Alerts (CY)</option>
+            <option value="orange">Orange Alerts (CY)</option>
+            <option value="sick">Sick Hours (CY)</option>
+          </select>
+        </div>
+        <div id="correlate-note">FY = fiscal year (Apr–Mar). CY = calendar year. Mixed FY/CY pairs show separate time axes.</div>
+      </div>
+      <div class="chart-card" style="flex:1;border-right:none;">
+        <div class="chart-title">Cross-Reference</div>
+        <canvas id="chart-correlate"></canvas>
+      </div>
+    </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
   <script src="js/app.js"></script>
 </body>

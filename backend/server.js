@@ -11,6 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 const DATA_DIR = path.join(__dirname, 'data');
+const FOIP_DIR = path.join(__dirname, 'data', 'foip');
 const CALGARY_API = process.env.CALGARY_API_BASE;
 
 // ─── Helper: fetch from Calgary Open Data ────────────────────────────────────
@@ -63,7 +64,7 @@ async function refreshData() {
 function buildStats(calls, callsByType, yearFilter) {
   var filtered = yearFilter
     ? calls.filter(function(c) { return new Date(c.date).getFullYear() === yearFilter; })
-    : calls.filter(function(c) { return new Date(c.date).getFullYear() < 2020; });
+    : calls.filter(function(c) { return new Date(c.date).getFullYear() <= 2020; });
 
   var byDay = [0,0,0,0,0,0,0];
   var byMonth = [0,0,0,0,0,0,0,0,0,0,0,0];
@@ -162,12 +163,64 @@ app.get('/stats', function(req, res) {
   var seen = {};
   calls.forEach(function(c) {
     var y = new Date(c.date).getFullYear();
-    if (y < 2020 && !seen[y]) { seen[y] = true; years.push(y); }
+    if (y <= 2020 && !seen[y]) { seen[y] = true; years.push(y); }
   });
   years.sort();
 
   stats.years = years;
   res.json(stats);
+});
+
+// ─── FOIP Static Data Routes ──────────────────────────────────────────────────
+
+function loadFoip(filename) {
+  var filepath = path.join(FOIP_DIR, filename);
+  if (fs.existsSync(filepath)) {
+    return JSON.parse(fs.readFileSync(filepath, 'utf8'));
+  }
+  return null;
+}
+
+// GET /foip/alert-stats — Red/Orange alert statistics by year
+app.get('/foip/alert-stats', function(req, res) {
+  var data = loadFoip('alert_stats.json');
+  if (!data) return res.status(404).json({ error: 'Data not found' });
+  res.json(data);
+});
+
+// GET /foip/toc-hours — Transfer of Care hospital offload delay data
+app.get('/foip/toc-hours', function(req, res) {
+  var data = loadFoip('toc_hours.json');
+  if (!data) return res.status(404).json({ error: 'Data not found' });
+  res.json(data);
+});
+
+// GET /foip/event-volumes — EMS event volumes by fiscal year
+app.get('/foip/event-volumes', function(req, res) {
+  var data = loadFoip('event_volumes.json');
+  if (!data) return res.status(404).json({ error: 'Data not found' });
+  res.json(data);
+});
+
+// GET /foip/unit-availability — Per-unit availability data by fiscal year
+app.get('/foip/unit-availability', function(req, res) {
+  var data = loadFoip('unit_availability.json');
+  if (!data) return res.status(404).json({ error: 'Data not found' });
+  res.json(data);
+});
+
+// GET /foip/dispatch-heatmap — GPS coordinates for heatmap layer
+app.get('/foip/dispatch-heatmap', function(req, res) {
+  var data = loadFoip('dispatch_heatmap.json');
+  if (!data) return res.status(404).json({ error: 'Data not found' });
+  res.json(data);
+});
+
+// GET /foip/workforce — Overtime and sick time data
+app.get('/foip/workforce', function(req, res) {
+  var data = loadFoip('workforce.json');
+  if (!data) return res.status(404).json({ error: 'Data not found' });
+  res.json(data);
 });
 
 // GET /health

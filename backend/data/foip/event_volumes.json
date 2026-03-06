@@ -1,0 +1,59 @@
+{
+  "source": "FOIP requests 2020-G-180, 2020-G-172 — AHS EMS Operational Event Volumes, Calgary Zone",
+  "notes": {
+    "fiscalYear": "April 1 to March 31",
+    "preCAD": "FY2015/16 and FY2016/17 data may have reduced CAD reliability due to pre-unified platform",
+    "fy2021Note": "FY2020/21 is partial year only (through ~Oct 2020) — COVID-19 impacts visible"
+  },
+  "byFiscalYear": [
+    {
+      "fiscalYear": "2015/16",
+      "emergency": 106059,
+      "nonEmergency911": 40597,
+      "ift": 26742,
+      "other": null,
+      "total": 173398
+    },
+    {
+      "fiscalYear": "2016/17",
+      "emergency": 108761,
+      "nonEmergency911": 43013,
+      "ift": 26506,
+      "other": null,
+      "total": 178280
+    },
+    {
+      "fiscalYear": "2017/18",
+      "emergency": 117090,
+      "nonEmergency911": 42838,
+      "ift": 27400,
+      "other": null,
+      "total": 187328
+    },
+    {
+      "fiscalYear": "2018/19",
+      "emergency": 116773,
+      "nonEmergency911": 45619,
+      "ift": 28175,
+      "other": null,
+      "total": 190567
+    },
+    {
+      "fiscalYear": "2019/20",
+      "emergency": 119951,
+      "nonEmergency911": 49400,
+      "ift": 30317,
+      "other": null,
+      "total": 199668
+    },
+    {
+      "fiscalYear": "2020/21",
+      "emergency": null,
+      "nonEmergency911": null,
+      "ift": null,
+      "other": null,
+      "total": 101904,
+      "note": "Partial year — breakdown not available separately"
+    }
+  ]
+}

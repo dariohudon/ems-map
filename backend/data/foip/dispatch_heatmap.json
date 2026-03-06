@@ -1,0 +1,91 @@
+{
+  "source": "FOIP request 2021-G-017 — Calgary Zone EMS Dispatch Events with GPS Coordinates",
+  "notes": {
+    "period": "January 20, 2020 to November 22, 2020 (Calendar Year 2020, ~10 months)",
+    "municipality": "Cochrane — includes surrounding Rocky View County communities served by Calgary Zone EMS",
+    "coordinates": "Unit Dispatch Latitude/Longitude — position of the EMS unit AT TIME OF DISPATCH",
+    "interpretation": "Shows where Calgary Zone ambulances were physically stationed/positioned when dispatched to calls in the Cochrane area — not the call location itself",
+    "totalEvents": "Approximately 1,800 dispatch events extracted from PDF (not all have GPS coordinates)",
+    "unitPrefixes": {
+      "COCH": "Cochrane EMS station units",
+      "CALG": "Calgary Metro units (dispatched from Calgary)",
+      "NAKO": "Nakoda EMS units (Morley area)",
+      "AIRD": "Airdrie EMS units",
+      "CANM": "Canmore EMS units",
+      "BANF": "Banff EMS units",
+      "SUND": "Sundre EMS units",
+      "DIDS": "Didsbury EMS units",
+      "PRID": "Priddis area units",
+      "CARS": "Carstairs EMS units",
+      "STRA": "Strathmore (Wheatland EMS) units",
+      "KANA": "Kananaskis area units",
+      "BKDM": "Black Diamond EMS units",
+      "LIND": "Linden area units",
+      "REDD": "Redcliff area units",
+      "AIRD": "Airdrie units",
+      "DIDS": "Didsbury units"
+    }
+  },
+  "clusters": [
+    {
+      "lat": 51.1836, "lng": -114.4735,
+      "approximateCount": 620,
+      "label": "Cochrane EMS Station",
+      "note": "Primary cluster — COCH-1A1, COCH-1A2, COCH-2A1, COCH-2A2 units based here"
+    },
+    {
+      "lat": 51.1152, "lng": -114.2030,
+      "approximateCount": 130,
+      "label": "Calgary Metro Dispatch Area (CALG units)",
+      "note": "Various CALG- prefixed units dispatched from Calgary Metro stations"
+    },
+    {
+      "lat": 51.1543, "lng": -114.8444,
+      "approximateCount": 38,
+      "label": "Nakoda EMS (Morley)",
+      "note": "NAKO-3A1, NAKO-3A2 units"
+    },
+    {
+      "lat": 51.3004, "lng": -114.0366,
+      "approximateCount": 18,
+      "label": "Airdrie EMS",
+      "note": "AIRD-1A1, AIRD-2A1 units"
+    },
+    {
+      "lat": 51.1064, "lng": -114.6311,
+      "approximateCount": 14,
+      "label": "Canmore EMS",
+      "note": "CANM-1A1, CANM-2A1 units"
+    },
+    {
+      "lat": 51.1765, "lng": -115.3507,
+      "approximateCount": 8,
+      "label": "Banff EMS",
+      "note": "BANF-1A1 units"
+    },
+    {
+      "lat": 51.1898, "lng": -114.4650,
+      "approximateCount": 5,
+      "label": "Sundre EMS",
+      "note": "SUND-1A1, SUND-2A1 units"
+    },
+    {
+      "lat": 51.0814, "lng": -114.1407,
+      "approximateCount": 5,
+      "label": "Priddis/Black Diamond area",
+      "note": "PRID, BKDM units"
+    },
+    {
+      "lat": 51.4938, "lng": -113.9980,
+      "approximateCount": 4,
+      "label": "Carstairs EMS",
+      "note": "CARS-1A1 units"
+    },
+    {
+      "lat": 51.0668, "lng": -113.8139,
+      "approximateCount": 3,
+      "label": "Strathmore (Wheatland EMS)",
+      "note": "STRA-1A1 units"
+    }
+  ]
+}

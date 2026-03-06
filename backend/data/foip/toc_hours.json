@@ -1,0 +1,59 @@
+{
+  "source": "FOIP request 2020-G-172 — AHS EMS Transfer of Care (hospital offload) delays, Calgary Zone",
+  "notes": {
+    "tocDefinition": "Lost ambulance hours = time ambulances spent waiting at hospital to transfer patient care to ER staff, beyond the benchmark threshold",
+    "fiscalYear": "April 1 to March 31",
+    "fy2021Note": "FY2020/21 data is partial year — COVID-19 impacts visible in reduced event volume"
+  },
+  "byFiscalYear": [
+    {
+      "fiscalYear": "2015/16",
+      "lostAmbulanceHours": 88908,
+      "costOfLostHours": 12524476,
+      "totalAmbulanceHours": 749756,
+      "emsEvents": 173398,
+      "tocAsPercentOfTotal": 11.9
+    },
+    {
+      "fiscalYear": "2016/17",
+      "lostAmbulanceHours": 88430,
+      "costOfLostHours": 12717974,
+      "totalAmbulanceHours": 739229,
+      "emsEvents": 178280,
+      "tocAsPercentOfTotal": 12.0
+    },
+    {
+      "fiscalYear": "2017/18",
+      "lostAmbulanceHours": 105257,
+      "costOfLostHours": 15931734,
+      "totalAmbulanceHours": 738651,
+      "emsEvents": 187328,
+      "tocAsPercentOfTotal": 14.3
+    },
+    {
+      "fiscalYear": "2018/19",
+      "lostAmbulanceHours": 96453,
+      "costOfLostHours": 14513306,
+      "totalAmbulanceHours": 762597,
+      "emsEvents": 190567,
+      "tocAsPercentOfTotal": 12.6
+    },
+    {
+      "fiscalYear": "2019/20",
+      "lostAmbulanceHours": 106726,
+      "costOfLostHours": 15963023,
+      "totalAmbulanceHours": 797871,
+      "emsEvents": 199668,
+      "tocAsPercentOfTotal": 13.4
+    },
+    {
+      "fiscalYear": "2020/21",
+      "lostAmbulanceHours": 76852,
+      "costOfLostHours": 11633123,
+      "totalAmbulanceHours": 606807,
+      "emsEvents": 101904,
+      "tocAsPercentOfTotal": 12.7,
+      "note": "Partial year data — COVID-19 significantly reduced event volumes"
+    }
+  ]
+}
